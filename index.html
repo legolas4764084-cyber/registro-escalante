@@ -4,182 +4,525 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>U.E. Las Delicias - Prof. Jaime Escalante</title>
+
+    <!-- Firebase Compat (más simple para HTML puro) -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+    <!-- jsPDF y html2canvas para exportar PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
     <style>
-        /* Estilos iguales a la versión anterior, omitidos por brevedad. Copia los estilos del código previo aquí. */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            color: #333;
+        }
+        #loginScreen {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to bottom, #1e3c72, #2a5298);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        #loginScreen h1 { font-size: 2.8em; margin-bottom: 20px; text-shadow: 2px 2px 6px rgba(0,0,0,0.5); }
+        #loginScreen p { font-size: 1.3em; margin-bottom: 40px; }
+        .btn-access {
+            width: 320px;
+            padding: 20px;
+            margin: 15px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        .btn-direccion { background: #c0392b; }
+        .btn-profesores { background: #27ae60; }
+        .btn-access:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+
+        #mainApp { display: none; min-height: 100vh; }
+        header {
+            background: #1e3c72;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        header img { height: 100px; margin-bottom: 10px; }
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #c0392b;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+        h2 {
+            color: #1e3c72;
+            border-bottom: 3px solid #2a5298;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        form {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 35px;
+        }
+        label { font-weight: bold; display: block; margin: 12px 0 6px; }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        button:not(.btn-access):not(.logout-btn) {
+            background: #2a5298;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.05em;
+        }
+        button:hover:not(.btn-access):not(.logout-btn) { background: #1e3c72; }
+        #exportPdfBtn { background: #8e44ad; }
+        #exportPdfBtn:hover { background: #7d3c98; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #1e3c72; color: white; }
+        .section { margin-bottom: 50px; }
+        .hidden { display: none !important; }
+        #recordsContainer {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
 
-    <!-- Pantalla de Inicio (igual que antes) -->
-    <div id="loginScreen">
-        <h1>U.E. Las Delicias<br>Prof. Jaime Escalante</h1>
-        <p>Sistema de Registro de Incidencias</p>
-        <button class="btn-access btn-direccion" id="btnDireccion">DIRECCIÓN</button>
-        <button class="btn-access btn-profesores" id="btnProfesores">PROFESORES</button>
-    </div>
+<div id="loginScreen">
+    <h1>U.E. Las Delicias<br>Prof. Jaime Escalante</h1>
+    <p>Sistema de Registro de Incidencias</p>
+    <button class="btn-access btn-direccion" id="btnDireccion">DIRECCIÓN</button>
+    <button class="btn-access btn-profesores" id="btnProfesores">PROFESORES</button>
+</div>
 
-    <!-- Aplicación Principal (igual que antes, con secciones) -->
-    <div id="mainApp">
-        <!-- Header con logo (igual) -->
-        <header>
-            <img src="https://i.ibb.co.com/kc1K1nZ/logo-jaime-escalante.png" alt="Logo U.E. Las Delicias - Prof. Jaime Escalante">
-            <h1>Unidad Educativa Las Delicias<br>Prof. Jaime Escalante - La Paz, Bolivia</h1>
-            <button class="logout-btn" id="logoutBtn">Cerrar Sesión</button>
-        </header>
+<div id="mainApp">
+    <header>
+        <img src="https://i.ibb.co/kc1K1nZ/logo-jaime-escalante.png" alt="Logo U.E. Las Delicias">
+        <h1>Unidad Educativa Las Delicias<br>Prof. Jaime Escalante - La Paz, Bolivia</h1>
+        <button class="logout-btn" id="logoutBtn">Cerrar Sesión</button>
+    </header>
 
-        <div class="container">
-            <!-- Secciones 1 a 4 iguales, pero sin localStorage -->
+    <div class="container">
+
+        <div class="section" id="sectionCrearCurso">
+            <h2>1. Crear un Nuevo Curso</h2>
+            <form id="addCourseForm">
+                <label for="courseName">Nombre del Curso (ej: 5to A):</label>
+                <input type="text" id="courseName" required placeholder="Ej: 10mo Humanidades">
+                <button type="submit">Crear Curso</button>
+            </form>
         </div>
+
+        <div class="section" id="sectionAgregarEstudiante">
+            <h2>2. Agregar Estudiante a un Curso</h2>
+            <form id="addStudentForm">
+                <label for="selectCourseAddStudent">Seleccionar Curso:</label>
+                <select id="selectCourseAddStudent" required></select>
+                <label for="studentName">Nombre Completo del Estudiante:</label>
+                <input type="text" id="studentName" required placeholder="Ej: Juan Pérez Rojas">
+                <button type="submit">Agregar Estudiante</button>
+            </form>
+        </div>
+
+        <div class="section" id="sectionRegistrarIncidencia">
+            <h2>3. Registrar Incidencia</h2>
+            <form id="registerIssueForm">
+                <label for="selectCourseIssue">Seleccionar Curso:</label>
+                <select id="selectCourseIssue" required></select>
+                <label for="selectStudent">Seleccionar Estudiante:</label>
+                <select id="selectStudent" required></select>
+                <label for="trimestre">Trimestre:</label>
+                <select id="trimestre" required>
+                    <option value="1er Trimestre">1er Trimestre</option>
+                    <option value="2do Trimestre">2do Trimestre</option>
+                    <option value="3er Trimestre">3er Trimestre</option>
+                </select>
+                <label for="issueType">Tipo de Incidencia:</label>
+                <select id="issueType" required>
+                    <option value="falta">Falta (Ausencia)</option>
+                    <option value="incumplimiento">Incumplimiento</option>
+                    <option value="indisciplina">Indisciplina</option>
+                </select>
+                <label for="subject">Materia:</label>
+                <select id="subject" required>
+                    <option value="MAT">MAT - Matemáticas</option>
+                    <option value="LEN">LEN - Lenguaje</option>
+                    <option value="ING">ING - Inglés</option>
+                    <option value="CSC">CSC - Ciencias Sociales</option>
+                    <option value="EFI">EFI - Educación Física</option>
+                    <option value="MUS">MUS - Música</option>
+                    <option value="REL">REL - Religión</option>
+                    <option value="ATP">ATP - Artes Plásticas</option>
+                    <option value="FIL">FIL - Filosofía</option>
+                    <option value="TEC">TEC - Tecnología</option>
+                    <option value="BIO">BIO - Biología</option>
+                    <option value="QMC">QMC - Química</option>
+                    <option value="FIS">FIS - Física</option>
+                </select>
+                <label for="issueDate">Fecha:</label>
+                <input type="date" id="issueDate" required>
+                <label for="issueDescription">Descripción:</label>
+                <input type="text" id="issueDescription" required placeholder="Describa la incidencia">
+                <button type="submit">Registrar Incidencia</button>
+            </form>
+        </div>
+
+        <div class="section">
+            <h2>4. Ver Registros</h2>
+            <label for="viewType">Tipo de vista:</label>
+            <select id="viewType">
+                <option value="course">Por Curso</option>
+                <option value="student">Por Estudiante</option>
+            </select>
+
+            <div id="viewByCourse" style="margin: 15px 0;">
+                <label for="selectCourseView">Seleccionar Curso:</label>
+                <select id="selectCourseView"></select>
+            </div>
+
+            <div id="viewByStudent" style="display:none; margin: 15px 0;">
+                <label for="selectCourseStudent">Seleccionar Curso:</label>
+                <select id="selectCourseStudent"></select>
+                <label for="selectStudentView">Seleccionar Estudiante:</label>
+                <select id="selectStudentView"></select>
+            </div>
+
+            <button id="viewRecordsBtn" style="margin: 20px 10px 0 0;">Ver Registros</button>
+            <button id="exportPdfBtn" style="display:none;">Exportar a PDF</button>
+
+            <div id="recordsContainer" style="margin-top: 30px;">
+                <div id="recordsTable"></div>
+            </div>
+        </div>
+
     </div>
+</div>
 
-    <script>
-        // Configura Firebase con TUS credenciales
-        const firebaseConfig = {
-            apiKey: "TU_API_KEY",
-            authDomain: "TU_PROYECTO.firebaseapp.com",
-            projectId: "TU_PROJECT_ID",
-            storageBucket: "TU_PROYECTO.appspot.com",
-            messagingSenderId: "TU_SENDER_ID",
-            appId: "TU_APP_ID"
-        };
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+<script>
+// ────────────────────────────────────────────────
+//  Firebase Config (ya con tus credenciales)
+const firebaseConfig = {
+  apiKey: "AIzaSyCn6Q-HxzCtd1rln_RSyyYgAvr_uz2pQ9A",
+  authDomain: "gestion-ue-las-delicias.firebaseapp.com",
+  projectId: "gestion-ue-las-delicias",
+  storageBucket: "gestion-ue-las-delicias.firebasestorage.app",
+  messagingSenderId: "548742390776",
+  appId: "1:548742390776:web:d3ea4cc96b8711568cac0d",
+  measurementId: "G-HSC2D59DGY"
+};
 
-        const CONTRASEÑA_DIRECCION = "JAIMEESCALANTE2026";
-        let modoActual = null;
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-        // Funciones actualizadas para usar Firestore
-        async function loadData() {
-            const coursesSnapshot = await db.collection('courses').get();
-            let courses = {};
-            coursesSnapshot.forEach(doc => {
-                courses[doc.id] = doc.data();
+const CONTRASEÑA_DIRECCION = "JAIMEESCALANTE2026";
+let modoActual = null;
+
+// ────────────────────────────────────────────────
+//  Funciones básicas
+function updateCourseSelects() {
+    const selects = [
+        'selectCourseAddStudent', 'selectCourseIssue',
+        'selectCourseView', 'selectCourseStudent'
+    ];
+    db.collection('courses').get().then(snapshot => {
+        selects.forEach(id => {
+            const select = document.getElementById(id);
+            select.innerHTML = '<option value="">-- Seleccione un curso --</option>';
+            snapshot.forEach(doc => {
+                const opt = document.createElement('option');
+                opt.value = doc.id;
+                opt.textContent = doc.id;
+                select.appendChild(opt);
             });
-            return { courses };
-        }
+        });
+    }).catch(err => console.error("Error al cargar cursos:", err));
+}
 
-        async function saveCourse(courseName, courseData) {
-            await db.collection('courses').doc(courseName).set(courseData);
-        }
+function updateStudentSelect(courseSelectId, studentSelectId) {
+    const course = document.getElementById(courseSelectId).value;
+    const select = document.getElementById(studentSelectId);
+    select.innerHTML = '<option value="">-- Seleccione un estudiante --</option>';
 
-        async function updateCourse(courseName, updatedData) {
-            await db.collection('courses').doc(courseName).update(updatedData);
-        }
+    if (!course) return;
 
-        function updateCourseSelects(courses) {
-            // Igual que antes, pero usando 'courses' cargados de Firestore
-            const ids = ['selectCourseAddStudent', 'selectCourseIssue', 'selectCourseView', 'selectCourseStudent'];
-            ids.forEach(id => {
-                const select = document.getElementById(id);
-                select.innerHTML = '<option value="">-- Seleccione un curso --</option>';
-                Object.keys(courses).forEach(course => {
-                    const opt = document.createElement('option');
-                    opt.value = course;
-                    opt.textContent = course;
-                    select.appendChild(opt);
-                });
+    db.collection('courses').doc(course).get().then(doc => {
+        if (doc.exists) {
+            const students = doc.data().students || [];
+            students.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.name;
+                opt.textContent = s.name;
+                select.appendChild(opt);
             });
         }
+    }).catch(err => console.error("Error al cargar estudiantes:", err));
+}
 
-        // Función para mostrar app y cargar datos
-        async function mostrarApp() {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'block';
-            const data = await loadData();
-            updateCourseSelects(data.courses);
+function mostrarApp() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    updateCourseSelects();
 
-            if (modoActual === 'profesor') {
-                document.getElementById('sectionCrearCurso').classList.add('hidden');
-                document.getElementById('sectionAgregarEstudiante').classList.add('hidden');
-            }
+    if (modoActual === 'profesor') {
+        document.getElementById('sectionCrearCurso').classList.add('hidden');
+        document.getElementById('sectionAgregarEstudiante').classList.add('hidden');
+    }
+}
+
+// ────────────────────────────────────────────────
+//  Eventos de acceso
+document.getElementById('btnDireccion').addEventListener('click', () => {
+    const pass = prompt("Contraseña para DIRECCIÓN:");
+    if (pass === CONTRASEÑA_DIRECCION) {
+        modoActual = 'direccion';
+        mostrarApp();
+    } else {
+        alert("Contraseña incorrecta.");
+    }
+});
+
+document.getElementById('btnProfesores').addEventListener('click', () => {
+    if (confirm("¿Ingresar como PROFESOR?\n(Solo registro de incidencias)")) {
+        modoActual = 'profesor';
+        mostrarApp();
+    }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    if (confirm("¿Cerrar sesión?")) {
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('loginScreen').style.display = 'flex';
+    }
+});
+
+// ────────────────────────────────────────────────
+//  Crear curso
+document.getElementById('addCourseForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = document.getElementById('courseName').value.trim();
+    if (!name) return alert("Ingrese nombre del curso");
+
+    db.collection('courses').doc(name).get().then(doc => {
+        if (doc.exists) {
+            alert("El curso ya existe");
+        } else {
+            db.collection('courses').doc(name).set({ students: [] })
+                .then(() => {
+                    alert("Curso creado");
+                    document.getElementById('courseName').value = '';
+                    updateCourseSelects();
+                })
+                .catch(err => alert("Error: " + err.message));
+        }
+    });
+});
+
+// ────────────────────────────────────────────────
+//  Agregar estudiante
+document.getElementById('addStudentForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const course = document.getElementById('selectCourseAddStudent').value;
+    const name = document.getElementById('studentName').value.trim();
+    if (!course || !name) return alert("Complete los campos");
+
+    db.collection('courses').doc(course).get().then(doc => {
+        if (!doc.exists) return alert("Curso no encontrado");
+
+        const data = doc.data();
+        if (data.students.some(s => s.name === name)) {
+            alert("El estudiante ya está en este curso");
+            return;
         }
 
-        // Eventos de login (iguales)
+        data.students.push({ name, issues: [] });
+        db.collection('courses').doc(course).update({ students: data.students })
+            .then(() => {
+                alert("Estudiante agregado");
+                document.getElementById('studentName').value = '';
+                updateStudentSelect('selectCourseIssue', 'selectStudent');
+                updateStudentSelect('selectCourseStudent', 'selectStudentView');
+            })
+            .catch(err => alert("Error: " + err.message));
+    });
+});
 
-        // Crear curso
-        document.getElementById('addCourseForm').addEventListener('submit', async e => {
-            e.preventDefault();
-            const name = document.getElementById('courseName').value.trim();
-            const docRef = db.collection('courses').doc(name);
-            const doc = await docRef.get();
-            if (!doc.exists) {
-                await saveCourse(name, { students: [] });
-                const data = await loadData();
-                updateCourseSelects(data.courses);
-                alert('Curso creado.');
-                document.getElementById('courseName').value = '';
-            } else {
-                alert('Curso ya existe.');
-            }
+// ────────────────────────────────────────────────
+//  Registrar incidencia
+document.getElementById('registerIssueForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const course = document.getElementById('selectCourseIssue').value;
+    const studentName = document.getElementById('selectStudent').value;
+    const trimestre = document.getElementById('trimestre').value;
+    const type = document.getElementById('issueType').value;
+    const subject = document.getElementById('subject').value;
+    const date = document.getElementById('issueDate').value;
+    const desc = document.getElementById('issueDescription').value.trim();
+
+    if (!course || !studentName || !trimestre || !type || !subject || !date || !desc) {
+        return alert("Complete todos los campos");
+    }
+
+    db.collection('courses').doc(course).get().then(doc => {
+        if (!doc.exists) return alert("Curso no encontrado");
+
+        const data = doc.data();
+        const student = data.students.find(s => s.name === studentName);
+        if (!student) return alert("Estudiante no encontrado");
+
+        student.issues.push({ trimestre, type, subject, date, description: desc });
+
+        db.collection('courses').doc(course).update({ students: data.students })
+            .then(() => {
+                alert("Incidencia registrada");
+                document.getElementById('issueDate').value = '';
+                document.getElementById('issueDescription').value = '';
+            })
+            .catch(err => alert("Error: " + err.message));
+    });
+});
+
+// ────────────────────────────────────────────────
+//  Cambiar tipo de vista
+document.getElementById('viewType').addEventListener('change', function() {
+    document.getElementById('viewByCourse').style.display = this.value === 'course' ? 'block' : 'none';
+    document.getElementById('viewByStudent').style.display = this.value === 'student' ? 'block' : 'none';
+});
+
+// ────────────────────────────────────────────────
+//  Ver registros
+document.getElementById('viewRecordsBtn').addEventListener('click', () => {
+    const viewType = document.getElementById('viewType').value;
+    const container = document.getElementById('recordsTable');
+    container.innerHTML = '';
+    document.getElementById('exportPdfBtn').style.display = 'none';
+
+    let title = '';
+    let issues = [];
+
+    if (viewType === 'course') {
+        const course = document.getElementById('selectCourseView').value;
+        if (!course) return alert('Seleccione un curso');
+        title = `Registros del Curso: ${course}`;
+
+        db.collection('courses').doc(course).get().then(doc => {
+            if (!doc.exists) return alert('Curso no encontrado');
+            const data = doc.data();
+            data.students.forEach(s => {
+                s.issues.forEach(i => issues.push({ student: s.name, ...i }));
+            });
+            renderTable(issues, title);
         });
+    } else {
+        const course = document.getElementById('selectCourseStudent').value;
+        const studentName = document.getElementById('selectStudentView').value;
+        if (!course || !studentName) return alert('Seleccione curso y estudiante');
+        title = `Registros de ${studentName} (${course})`;
 
-        // Agregar estudiante
-        document.getElementById('addStudentForm').addEventListener('submit', async e => {
-            e.preventDefault();
-            const course = document.getElementById('selectCourseAddStudent').value;
-            const name = document.getElementById('studentName').value.trim();
-            if (course && name) {
-                const docRef = db.collection('courses').doc(course);
-                const doc = await docRef.get();
-                if (doc.exists) {
-                    const courseData = doc.data();
-                    if (!courseData.students.find(s => s.name === name)) {
-                        courseData.students.push({ name, issues: [] });
-                        await updateCourse(course, courseData);
-                        const data = await loadData();
-                        updateStudentSelect('selectCourseIssue', 'selectStudent');
-                        updateStudentSelect('selectCourseStudent', 'selectStudentView');
-                        alert('Estudiante agregado.');
-                        document.getElementById('studentName').value = '';
-                    } else {
-                        alert('Estudiante ya existe.');
-                    }
-                }
-            }
+        db.collection('courses').doc(course).get().then(doc => {
+            if (!doc.exists) return alert('Curso no encontrado');
+            const data = doc.data();
+            const student = data.students.find(s => s.name === studentName);
+            if (!student) return alert('Estudiante no encontrado');
+            student.issues.forEach(i => issues.push({ student: studentName, ...i }));
+            renderTable(issues, title);
         });
+    }
+});
 
-        // Registrar incidencia
-        document.getElementById('registerIssueForm').addEventListener('submit', async e => {
-            e.preventDefault();
-            const course = document.getElementById('selectCourseIssue').value;
-            const studentName = document.getElementById('selectStudent').value;
-            const trimestre = document.getElementById('trimestre').value;
-            const type = document.getElementById('issueType').value;
-            const subject = document.getElementById('subject').value;
-            const date = document.getElementById('issueDate').value;
-            const desc = document.getElementById('issueDescription').value.trim();
+function renderTable(issues, title) {
+    const container = document.getElementById('recordsTable');
+    if (issues.length === 0) {
+        container.innerHTML = '<p style="text-align:center; padding:30px;">No hay incidencias registradas.</p>';
+        return;
+    }
 
-            if (course && studentName && trimestre && type && subject && date && desc) {
-                const docRef = db.collection('courses').doc(course);
-                const doc = await docRef.get();
-                if (doc.exists) {
-                    const courseData = doc.data();
-                    const student = courseData.students.find(s => s.name === studentName);
-                    if (student) {
-                        student.issues.push({ trimestre, type, subject, date, description: desc });
-                        await updateCourse(course, courseData);
-                        alert('Incidencia registrada.');
-                        document.getElementById('issueDate').value = '';
-                        document.getElementById('issueDescription').value = '';
-                    }
-                }
-            }
-        });
+    issues.sort((a,b) => new Date(b.date) - new Date(a.date));
 
-        // Ver registros (cargar desde Firestore)
-        document.getElementById('viewRecordsBtn').addEventListener('click', async () => {
-            const data = await loadData();
-            // Resto del código igual, usando data.courses
-        });
+    let html = `<h3>${title}</h3><table><thead><tr>
+        <th>Estudiante</th><th>Trimestre</th><th>Tipo</th><th>Materia</th><th>Fecha</th><th>Descripción</th>
+    </tr></thead><tbody>`;
 
-        // Export PDF igual
+    issues.forEach(i => {
+        const typeText = i.type === 'falta' ? 'Falta' : i.type === 'incumplimiento' ? 'Incumplimiento' : 'Indisciplina';
+        html += `<tr>
+            <td>${i.student}</td>
+            <td>${i.trimestre}</td>
+            <td>${typeText}</td>
+            <td>${i.subject}</td>
+            <td>${i.date}</td>
+            <td>${i.description}</td>
+        </tr>`;
+    });
 
-    </script>
+    html += '</tbody></table>';
+    container.innerHTML = html;
+    document.getElementById('exportPdfBtn').style.display = 'inline-block';
+}
+
+// ────────────────────────────────────────────────
+//  Exportar PDF
+document.getElementById('exportPdfBtn').addEventListener('click', async () => {
+    const { jsPDF } = window.jspdf;
+    const container = document.getElementById('recordsContainer');
+    const canvas = await html2canvas(container, { scale: 2 });
+    const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+    });
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height);
+    pdf.save('Reporte_Incidencias.pdf');
+});
+
+// ────────────────────────────────────────────────
+//  Actualizar selects de estudiantes al cambiar curso
+document.getElementById('selectCourseIssue').addEventListener('change', () => updateStudentSelect('selectCourseIssue', 'selectStudent'));
+document.getElementById('selectCourseStudent').addEventListener('change', () => updateStudentSelect('selectCourseStudent', 'selectStudentView'));
+</script>
 </body>
 </html>
-
