@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>U.E. Las Delicias - Prof. Jaime Escalante</title>
 
-    <!-- Firebase Compat (más simple para HTML puro) -->
+    <!-- Firebase Compat -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
-    <!-- jsPDF y html2canvas para exportar PDF -->
+    <!-- jsPDF + html2canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
@@ -99,7 +99,7 @@
             border-radius: 6px;
             font-size: 1em;
         }
-        button:not(.btn-access):not(.logout-btn) {
+        button:not(.btn-access):not(.logout-btn):not(.btn-delete-all) {
             background: #2a5298;
             color: white;
             padding: 12px 24px;
@@ -108,9 +108,24 @@
             cursor: pointer;
             font-size: 1.05em;
         }
-        button:hover:not(.btn-access):not(.logout-btn) { background: #1e3c72; }
-        #exportPdfBtn { background: #8e44ad; }
-        #exportPdfBtn:hover { background: #7d3c98; }
+        button:hover:not(.btn-access):not(.logout-btn):not(.btn-delete-all) { background: #1e3c72; }
+
+        .btn-delete-all {
+            background: #e74c3c;
+            color: white;
+            padding: 14px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 30px;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+        }
+        .btn-delete-all:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
 
         table {
             width: 100%;
@@ -128,6 +143,18 @@
             padding: 25px;
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .delete-section {
+            background: #fff5f5;
+            border: 2px solid #e74c3c;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 60px;
+            text-align: center;
+        }
+        .delete-section h3 {
+            color: #c0392b;
+            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -212,6 +239,17 @@
             </form>
         </div>
 
+        <!-- Nueva sección solo para DIRECCIÓN -->
+        <div class="section hidden" id="sectionAdminTools">
+            <div class="delete-section">
+                <h3>Zona de Administración - Borrado Total</h3>
+                <p style="color: #c0392b; font-weight: bold; margin-bottom: 20px;">
+                    ¡Cuidado! Esta acción eliminará TODOS los cursos, estudiantes e incidencias permanentemente.
+                </p>
+                <button class="btn-delete-all" id="btnBorrarTodo">BORRAR TODOS LOS DATOS</button>
+            </div>
+        </div>
+
         <div class="section">
             <h2>4. Ver Registros</h2>
             <label for="viewType">Tipo de vista:</label>
@@ -244,8 +282,7 @@
 </div>
 
 <script>
-// ────────────────────────────────────────────────
-//  Firebase Config (ya con tus credenciales)
+// Firebase Config (tus credenciales)
 const firebaseConfig = {
   apiKey: "AIzaSyCn6Q-HxzCtd1rln_RSyyYgAvr_uz2pQ9A",
   authDomain: "gestion-ue-las-delicias.firebaseapp.com",
@@ -259,11 +296,11 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-const CONTRASEÑA_DIRECCION = "JAIMEESCALANTE2026";
+const CONTRASEÑA_DIRECCION = "JAIME ESCALANTE2026";
 let modoActual = null;
 
 // ────────────────────────────────────────────────
-//  Funciones básicas
+// Funciones básicas (iguales a la versión anterior)
 function updateCourseSelects() {
     const selects = [
         'selectCourseAddStudent', 'selectCourseIssue',
@@ -308,6 +345,10 @@ function mostrarApp() {
     document.getElementById('mainApp').style.display = 'block';
     updateCourseSelects();
 
+    if (modoActual === 'direccion') {
+        document.getElementById('sectionAdminTools').classList.remove('hidden');
+    }
+
     if (modoActual === 'profesor') {
         document.getElementById('sectionCrearCurso').classList.add('hidden');
         document.getElementById('sectionAgregarEstudiante').classList.add('hidden');
@@ -315,7 +356,7 @@ function mostrarApp() {
 }
 
 // ────────────────────────────────────────────────
-//  Eventos de acceso
+// Eventos de acceso
 document.getElementById('btnDireccion').addEventListener('click', () => {
     const pass = prompt("Contraseña para DIRECCIÓN:");
     if (pass === CONTRASEÑA_DIRECCION) {
@@ -337,11 +378,51 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
     if (confirm("¿Cerrar sesión?")) {
         document.getElementById('mainApp').style.display = 'none';
         document.getElementById('loginScreen').style.display = 'flex';
+        modoActual = null;
     }
 });
 
 // ────────────────────────────────────────────────
-//  Crear curso
+// Nuevo: Botón Borrar Todo (solo en modo Dirección)
+document.getElementById('btnBorrarTodo').addEventListener('click', () => {
+    if (!confirm("¿Estás absolutamente seguro?\nEsto BORRARÁ TODOS los cursos, estudiantes e incidencias de forma IRREVERSIBLE.")) {
+        return;
+    }
+
+    const pass = prompt("Confirma la contraseña para proceder con el borrado total:");
+    if (pass !== CONTRASEÑA_DIRECCION) {
+        alert("Contraseña incorrecta. Operación cancelada.");
+        return;
+    }
+
+    // Borrar toda la colección 'courses'
+    db.collection('courses').get().then(snapshot => {
+        if (snapshot.empty) {
+            alert("No hay datos para borrar.");
+            return;
+        }
+
+        const batch = db.batch();
+        snapshot.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+
+        return batch.commit();
+    })
+    .then(() => {
+        alert("¡Todos los datos han sido borrados exitosamente!");
+        updateCourseSelects();
+    })
+    .catch(err => {
+        alert("Error al borrar los datos: " + err.message);
+        console.error(err);
+    });
+});
+
+// ────────────────────────────────────────────────
+// Resto de funciones (crear curso, agregar estudiante, registrar incidencia, ver registros, exportar PDF)
+// Son exactamente iguales a la versión anterior que funcionaba bien
+
 document.getElementById('addCourseForm').addEventListener('submit', e => {
     e.preventDefault();
     const name = document.getElementById('courseName').value.trim();
@@ -362,8 +443,6 @@ document.getElementById('addCourseForm').addEventListener('submit', e => {
     });
 });
 
-// ────────────────────────────────────────────────
-//  Agregar estudiante
 document.getElementById('addStudentForm').addEventListener('submit', e => {
     e.preventDefault();
     const course = document.getElementById('selectCourseAddStudent').value;
@@ -391,8 +470,6 @@ document.getElementById('addStudentForm').addEventListener('submit', e => {
     });
 });
 
-// ────────────────────────────────────────────────
-//  Registrar incidencia
 document.getElementById('registerIssueForm').addEventListener('submit', e => {
     e.preventDefault();
     const course = document.getElementById('selectCourseIssue').value;
@@ -426,15 +503,11 @@ document.getElementById('registerIssueForm').addEventListener('submit', e => {
     });
 });
 
-// ────────────────────────────────────────────────
-//  Cambiar tipo de vista
 document.getElementById('viewType').addEventListener('change', function() {
     document.getElementById('viewByCourse').style.display = this.value === 'course' ? 'block' : 'none';
     document.getElementById('viewByStudent').style.display = this.value === 'student' ? 'block' : 'none';
 });
 
-// ────────────────────────────────────────────────
-//  Ver registros
 document.getElementById('viewRecordsBtn').addEventListener('click', () => {
     const viewType = document.getElementById('viewType').value;
     const container = document.getElementById('recordsTable');
@@ -504,8 +577,6 @@ function renderTable(issues, title) {
     document.getElementById('exportPdfBtn').style.display = 'inline-block';
 }
 
-// ────────────────────────────────────────────────
-//  Exportar PDF
 document.getElementById('exportPdfBtn').addEventListener('click', async () => {
     const { jsPDF } = window.jspdf;
     const container = document.getElementById('recordsContainer');
@@ -519,8 +590,6 @@ document.getElementById('exportPdfBtn').addEventListener('click', async () => {
     pdf.save('Reporte_Incidencias.pdf');
 });
 
-// ────────────────────────────────────────────────
-//  Actualizar selects de estudiantes al cambiar curso
 document.getElementById('selectCourseIssue').addEventListener('change', () => updateStudentSelect('selectCourseIssue', 'selectStudent'));
 document.getElementById('selectCourseStudent').addEventListener('change', () => updateStudentSelect('selectCourseStudent', 'selectStudentView'));
 </script>
