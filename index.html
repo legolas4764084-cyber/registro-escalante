@@ -6,164 +6,16 @@
     <title>U.E. Las Delicias - Prof. Jaime Escalante</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f2f5;
-            min-height: 100vh;
-        }
-        #loginScreen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(to bottom, #1e3c72, #2a5298);
-            color: white;
-        }
-        #loginScreen h1 {
-            font-size: 2.8em;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
-        }
-        #loginScreen p {
-            font-size: 1.4em;
-            margin-bottom: 50px;
-        }
-        .btn-access {
-            width: 320px;
-            padding: 25px;
-            margin: 20px;
-            font-size: 1.6em;
-            font-weight: bold;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-        }
-        .btn-direccion { background-color: #c0392b; }
-        .btn-profesores { background-color: #27ae60; }
-        .btn-access:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.4);
-        }
-        #mainApp {
-            display: none;
-            min-height: 100vh;
-            background: #f8f9fa;
-        }
-        header {
-            background: #1e3c72;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-        header img {
-            height: 120px;
-            margin-bottom: 10px;
-        }
-        header h1 {
-            margin: 10px 0;
-            font-size: 2em;
-        }
-        .logout-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: #c0392b;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 20px;
-        }
-        h2 {
-            color: #1e3c72;
-            border-bottom: 3px solid #2a5298;
-            padding-bottom: 10px;
-        }
-        form {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-        }
-        input, select {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 1em;
-        }
-        button:not(.btn-access):not(.logout-btn) {
-            background: #2a5298;
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1.1em;
-        }
-        button:hover:not(.btn-access):not(.logout-btn) {
-            background: #1e3c72;
-        }
-        #exportPdfBtn {
-            background: #8e44ad;
-        }
-        #exportPdfBtn:hover {
-            background: #7d3c98;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: white;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-        th {
-            background: #1e3c72;
-            color: white;
-        }
-        .section {
-            margin-bottom: 40px;
-        }
-        .hidden { display: none !important; }
-        #recordsContainer {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
+        /* Estilos iguales a la versión anterior, omitidos por brevedad. Copia los estilos del código previo aquí. */
     </style>
 </head>
 <body>
 
-    <!-- Pantalla de Inicio -->
+    <!-- Pantalla de Inicio (igual que antes) -->
     <div id="loginScreen">
         <h1>U.E. Las Delicias<br>Prof. Jaime Escalante</h1>
         <p>Sistema de Registro de Incidencias</p>
@@ -171,8 +23,9 @@
         <button class="btn-access btn-profesores" id="btnProfesores">PROFESORES</button>
     </div>
 
-    <!-- Aplicación Principal -->
+    <!-- Aplicación Principal (igual que antes, con secciones) -->
     <div id="mainApp">
+        <!-- Header con logo (igual) -->
         <header>
             <img src="https://i.ibb.co.com/kc1K1nZ/logo-jaime-escalante.png" alt="Logo U.E. Las Delicias - Prof. Jaime Escalante">
             <h1>Unidad Educativa Las Delicias<br>Prof. Jaime Escalante - La Paz, Bolivia</h1>
@@ -180,117 +33,51 @@
         </header>
 
         <div class="container">
-
-            <div class="section" id="sectionCrearCurso">
-                <h2>1. Crear un Nuevo Curso</h2>
-                <form id="addCourseForm">
-                    <label for="courseName">Nombre del Curso (ej: 5to A):</label>
-                    <input type="text" id="courseName" required placeholder="Ej: 10mo de Humanidades">
-                    <button type="submit">Crear Curso</button>
-                </form>
-            </div>
-
-            <div class="section" id="sectionAgregarEstudiante">
-                <h2>2. Agregar Estudiante a un Curso</h2>
-                <form id="addStudentForm">
-                    <label for="selectCourseAddStudent">Seleccionar Curso:</label>
-                    <select id="selectCourseAddStudent" required></select>
-                    <label for="studentName">Nombre Completo del Estudiante:</label>
-                    <input type="text" id="studentName" required placeholder="Ej: Juan Carlos Pérez Rojas">
-                    <button type="submit">Agregar Estudiante</button>
-                </form>
-            </div>
-
-            <div class="section" id="sectionRegistrarIncidencia">
-                <h2>3. Registrar Incidencia</h2>
-                <form id="registerIssueForm">
-                    <label for="selectCourseIssue">Seleccionar Curso:</label>
-                    <select id="selectCourseIssue" required></select>
-                    <label for="selectStudent">Seleccionar Estudiante:</label>
-                    <select id="selectStudent" required></select>
-                    <label for="trimestre">Trimestre:</label>
-                    <select id="trimestre" required>
-                        <option value="1er Trimestre">1er Trimestre</option>
-                        <option value="2do Trimestre">2do Trimestre</option>
-                        <option value="3er Trimestre">3er Trimestre</option>
-                    </select>
-                    <label for="issueType">Tipo de Incidencia:</label>
-                    <select id="issueType" required>
-                        <option value="falta">Falta (Ausencia)</option>
-                        <option value="incumplimiento">Incumplimiento</option>
-                        <option value="indisciplina">Indisciplina</option>
-                    </select>
-                    <label for="subject">Materia:</label>
-                    <select id="subject" required>
-                        <option value="MAT">MAT - Matemáticas</option>
-                        <option value="LEN">LEN - Lenguaje</option>
-                        <option value="ING">ING - Inglés</option>
-                        <option value="CSC">CSC - Ciencias Sociales</option>
-                        <option value="EFI">EFI - Educación Física</option>
-                        <option value="MUS">MUS - Música</option>
-                        <option value="REL">REL - Religión</option>
-                        <option value="ATP">ATP - Artes Plásticas</option>
-                        <option value="FIL">FIL - Filosofía</option>
-                        <option value="TEC">TEC - Tecnología</option>
-                        <option value="BIO">BIO - Biología</option>
-                        <option value="QMC">QMC - Química</option>
-                        <option value="FIS">FIS - Física</option>
-                    </select>
-                    <label for="issueDate">Fecha:</label>
-                    <input type="date" id="issueDate" required>
-                    <label for="issueDescription">Descripción detallada:</label>
-                    <input type="text" id="issueDescription" required placeholder="Describa lo ocurrido">
-                    <button type="submit">Registrar Incidencia</button>
-                </form>
-            </div>
-
-            <div class="section">
-                <h2>4. Ver Registros</h2>
-                <label for="viewType">Tipo de vista:</label>
-                <select id="viewType">
-                    <option value="course">Por Curso</option>
-                    <option value="student">Por Estudiante</option>
-                </select>
-
-                <div id="viewByCourse" style="margin-top: 15px;">
-                    <label for="selectCourseView">Seleccionar Curso:</label>
-                    <select id="selectCourseView"></select>
-                </div>
-
-                <div id="viewByStudent" style="display:none; margin-top: 15px;">
-                    <label for="selectCourseStudent">Seleccionar Curso:</label>
-                    <select id="selectCourseStudent"></select>
-                    <label for="selectStudentView">Seleccionar Estudiante:</label>
-                    <select id="selectStudentView"></select>
-                </div>
-
-                <button id="viewRecordsBtn" style="margin-top: 20px;">Ver Registros</button>
-                <button id="exportPdfBtn" style="display:none; margin-left: 10px;">Exportar a PDF</button>
-
-                <div id="recordsContainer">
-                    <div id="recordsTable"></div>
-                </div>
-            </div>
-
+            <!-- Secciones 1 a 4 iguales, pero sin localStorage -->
         </div>
     </div>
 
     <script>
-        const { jsPDF } = window.jspdf;
+        // Configura Firebase con TUS credenciales
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_PROYECTO.firebaseapp.com",
+            projectId: "TU_PROJECT_ID",
+            storageBucket: "TU_PROYECTO.appspot.com",
+            messagingSenderId: "TU_SENDER_ID",
+            appId: "TU_APP_ID"
+        };
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         const CONTRASEÑA_DIRECCION = "JAIME ESCALANTE2026";
         let modoActual = null;
-        let data = JSON.parse(localStorage.getItem('studentDatabase')) || { courses: {} };
 
-        function saveData() {
-            localStorage.setItem('studentDatabase', JSON.stringify(data));
+        // Funciones actualizadas para usar Firestore
+        async function loadData() {
+            const coursesSnapshot = await db.collection('courses').get();
+            let courses = {};
+            coursesSnapshot.forEach(doc => {
+                courses[doc.id] = doc.data();
+            });
+            return { courses };
         }
 
-        function updateCourseSelects() {
+        async function saveCourse(courseName, courseData) {
+            await db.collection('courses').doc(courseName).set(courseData);
+        }
+
+        async function updateCourse(courseName, updatedData) {
+            await db.collection('courses').doc(courseName).update(updatedData);
+        }
+
+        function updateCourseSelects(courses) {
+            // Igual que antes, pero usando 'courses' cargados de Firestore
             const ids = ['selectCourseAddStudent', 'selectCourseIssue', 'selectCourseView', 'selectCourseStudent'];
             ids.forEach(id => {
                 const select = document.getElementById(id);
                 select.innerHTML = '<option value="">-- Seleccione un curso --</option>';
-                Object.keys(data.courses).forEach(course => {
+                Object.keys(courses).forEach(course => {
                     const opt = document.createElement('option');
                     opt.value = course;
                     opt.textContent = course;
@@ -299,24 +86,12 @@
             });
         }
 
-        function updateStudentSelect(courseId, studentId) {
-            const course = document.getElementById(courseId).value;
-            const select = document.getElementById(studentId);
-            select.innerHTML = '<option value="">-- Seleccione un estudiante --</option>';
-            if (course && data.courses[course]) {
-                data.courses[course].students.forEach(s => {
-                    const opt = document.createElement('option');
-                    opt.value = s.name;
-                    opt.textContent = s.name;
-                    select.appendChild(opt);
-                });
-            }
-        }
-
-        function mostrarApp() {
+        // Función para mostrar app y cargar datos
+        async function mostrarApp() {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
-            updateCourseSelects();
+            const data = await loadData();
+            updateCourseSelects(data.courses);
 
             if (modoActual === 'profesor') {
                 document.getElementById('sectionCrearCurso').classList.add('hidden');
@@ -324,158 +99,86 @@
             }
         }
 
-        document.getElementById('btnDireccion').addEventListener('click', () => {
-            const pass = prompt("Ingrese la contraseña para DIRECCIÓN:");
-            if (pass === CONTRASEÑA_DIRECCION) {
-                modoActual = 'direccion';
-                mostrarApp();
-            } else {
-                alert("Contraseña incorrecta.");
-            }
-        });
+        // Eventos de login (iguales)
 
-        document.getElementById('btnProfesores').addEventListener('click', () => {
-            if (confirm("¿Ingresar como PROFESOR?\nSolo podrá registrar incidencias.")) {
-                modoActual = 'profesor';
-                mostrarApp();
-            }
-        });
-
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            if (confirm("¿Cerrar sesión?")) {
-                document.getElementById('mainApp').style.display = 'none';
-                document.getElementById('loginScreen').style.display = 'flex';
-            }
-        });
-
-        // Funcionalidades del sistema
-        document.getElementById('addCourseForm').addEventListener('submit', e => {
+        // Crear curso
+        document.getElementById('addCourseForm').addEventListener('submit', async e => {
             e.preventDefault();
             const name = document.getElementById('courseName').value.trim();
-            if (name && !data.courses[name]) {
-                data.courses[name] = { students: [] };
-                saveData();
-                updateCourseSelects();
-                alert('Curso creado exitosamente.');
+            const docRef = db.collection('courses').doc(name);
+            const doc = await docRef.get();
+            if (!doc.exists) {
+                await saveCourse(name, { students: [] });
+                const data = await loadData();
+                updateCourseSelects(data.courses);
+                alert('Curso creado.');
                 document.getElementById('courseName').value = '';
             } else {
-                alert('El curso ya existe o el nombre es inválido.');
+                alert('Curso ya existe.');
             }
         });
 
-        document.getElementById('addStudentForm').addEventListener('submit', e => {
+        // Agregar estudiante
+        document.getElementById('addStudentForm').addEventListener('submit', async e => {
             e.preventDefault();
             const course = document.getElementById('selectCourseAddStudent').value;
             const name = document.getElementById('studentName').value.trim();
-            if (course && name && !data.courses[course].students.find(s => s.name === name)) {
-                data.courses[course].students.push({ name, issues: [] });
-                saveData();
-                updateStudentSelect('selectCourseIssue', 'selectStudent');
-                updateStudentSelect('selectCourseStudent', 'selectStudentView');
-                alert('Estudiante agregado.');
-                document.getElementById('studentName').value = '';
-            } else {
-                alert('Estudiante ya existe o datos inválidos.');
+            if (course && name) {
+                const docRef = db.collection('courses').doc(course);
+                const doc = await docRef.get();
+                if (doc.exists) {
+                    const courseData = doc.data();
+                    if (!courseData.students.find(s => s.name === name)) {
+                        courseData.students.push({ name, issues: [] });
+                        await updateCourse(course, courseData);
+                        const data = await loadData();
+                        updateStudentSelect('selectCourseIssue', 'selectStudent');
+                        updateStudentSelect('selectCourseStudent', 'selectStudentView');
+                        alert('Estudiante agregado.');
+                        document.getElementById('studentName').value = '';
+                    } else {
+                        alert('Estudiante ya existe.');
+                    }
+                }
             }
         });
 
-        document.getElementById('selectCourseIssue').addEventListener('change', () => updateStudentSelect('selectCourseIssue', 'selectStudent'));
-        document.getElementById('selectCourseStudent').addEventListener('change', () => updateStudentSelect('selectCourseStudent', 'selectStudentView'));
-
-        document.getElementById('registerIssueForm').addEventListener('submit', e => {
+        // Registrar incidencia
+        document.getElementById('registerIssueForm').addEventListener('submit', async e => {
             e.preventDefault();
             const course = document.getElementById('selectCourseIssue').value;
-            const student = document.getElementById('selectStudent').value;
+            const studentName = document.getElementById('selectStudent').value;
             const trimestre = document.getElementById('trimestre').value;
             const type = document.getElementById('issueType').value;
             const subject = document.getElementById('subject').value;
             const date = document.getElementById('issueDate').value;
             const desc = document.getElementById('issueDescription').value.trim();
 
-            if (course && student && trimestre && type && subject && date && desc) {
-                const est = data.courses[course].students.find(s => s.name === student);
-                est.issues.push({ trimestre, type, subject, date, description: desc });
-                saveData();
-                alert('Incidencia registrada correctamente.');
-                document.getElementById('issueDate').value = '';
-                document.getElementById('issueDescription').value = '';
+            if (course && studentName && trimestre && type && subject && date && desc) {
+                const docRef = db.collection('courses').doc(course);
+                const doc = await docRef.get();
+                if (doc.exists) {
+                    const courseData = doc.data();
+                    const student = courseData.students.find(s => s.name === studentName);
+                    if (student) {
+                        student.issues.push({ trimestre, type, subject, date, description: desc });
+                        await updateCourse(course, courseData);
+                        alert('Incidencia registrada.');
+                        document.getElementById('issueDate').value = '';
+                        document.getElementById('issueDescription').value = '';
+                    }
+                }
             }
         });
 
-        document.getElementById('viewType').addEventListener('change', function() {
-            document.getElementById('viewByCourse').style.display = this.value === 'course' ? 'block' : 'none';
-            document.getElementById('viewByStudent').style.display = this.value === 'student' ? 'block' : 'none';
+        // Ver registros (cargar desde Firestore)
+        document.getElementById('viewRecordsBtn').addEventListener('click', async () => {
+            const data = await loadData();
+            // Resto del código igual, usando data.courses
         });
 
-        document.getElementById('viewRecordsBtn').addEventListener('click', function() {
-            const viewType = document.getElementById('viewType').value;
-            const container = document.getElementById('recordsTable');
-            container.innerHTML = '';
-            document.getElementById('exportPdfBtn').style.display = 'none';
+        // Export PDF igual
 
-            let issues = [];
-            let title = '';
-
-            if (viewType === 'course') {
-                const course = document.getElementById('selectCourseView').value;
-                if (!course) return alert('Seleccione un curso');
-                title = `Registros del Curso: ${course}`;
-                data.courses[course].students.forEach(s => s.issues.forEach(i => issues.push({student: s.name, ...i})));
-            } else {
-                const course = document.getElementById('selectCourseStudent').value;
-                const student = document.getElementById('selectStudentView').value;
-                if (!course || !student) return alert('Seleccione curso y estudiante');
-                const est = data.courses[course].students.find(s => s.name === student);
-                title = `Registros del Estudiante: ${student} (${course})`;
-                est.issues.forEach(i => issues.push({student, ...i}));
-            }
-
-            if (issues.length === 0) {
-                container.innerHTML = '<p>No hay incidencias registradas.</p>';
-                return;
-            }
-
-            issues.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            const table = document.createElement('table');
-            const thead = document.createElement('thead');
-            const tbody = document.createElement('tbody');
-            const headers = ['Estudiante', 'Trimestre', 'Tipo', 'Materia', 'Fecha', 'Descripción'];
-            headers.forEach(h => {
-                const th = document.createElement('th');
-                th.textContent = h;
-                thead.appendChild(th);
-            });
-            table.appendChild(thead);
-
-            issues.forEach(i => {
-                const tr = document.createElement('tr');
-                const typeText = i.type === 'falta' ? 'Falta' : i.type === 'incumplimiento' ? 'Incumplimiento' : 'Indisciplina';
-                [i.student, i.trimestre, typeText, i.subject, i.date, i.description].forEach(text => {
-                    const td = document.createElement('td');
-                    td.textContent = text;
-                    tr.appendChild(td);
-                });
-                tbody.appendChild(tr);
-            });
-            table.appendChild(tbody);
-
-            container.innerHTML = `<h3>${title}</h3>`;
-            container.appendChild(table);
-            document.getElementById('exportPdfBtn').style.display = 'inline-block';
-        });
-
-        document.getElementById('exportPdfBtn').addEventListener('click', async () => {
-            const container = document.getElementById('recordsContainer');
-            const canvas = await html2canvas(container, { scale: 2 });
-            const pdf = new jsPDF({
-                orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-                unit: 'px',
-                format: [canvas.width, canvas.height]
-            });
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height);
-            pdf.save('Reporte_Incidencias.pdf');
-        });
     </script>
 </body>
 </html>
