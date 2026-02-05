@@ -169,7 +169,7 @@
 
 <div id="mainApp">
     <header>
-        <img src="https://i.ibb.co/kc1K1nZ/logo-jaime-escalante.png" alt="Logo U.E. Las Delicias">
+        <img src="https://i.ibb.co/kc1K1nZ/logo-jaime-escalante.png" alt="Logo U.E. Las Delicias" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAQMAAAD58v8AAAAABlBMVEUAAAD///+l2Z/dAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3gYBFzI0BrAAACtJREFUOMtjGAV2YMABAwACBwABAACTB0kAAAAASUVORK5CYII=';">
         <h1>Unidad Educativa Las Delicias<br>Prof. Jaime Escalante - La Paz, Bolivia</h1>
         <button class="logout-btn" id="logoutBtn">Cerrar Sesión</button>
     </header>
@@ -214,6 +214,7 @@
                     <option value="falta">Falta (Ausencia)</option>
                     <option value="incumplimiento">Incumplimiento</option>
                     <option value="indisciplina">Indisciplina</option>
+                    <option value="citacion">Citación</option>
                 </select>
                 <label for="subject">Materia:</label>
                 <select id="subject" required>
@@ -595,5 +596,3 @@ document.getElementById('selectCourseStudent').addEventListener('change', () => 
 </script>
 </body>
 </html>
-
-
