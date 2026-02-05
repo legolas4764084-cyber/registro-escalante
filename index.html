@@ -35,17 +35,10 @@
         #loginScreen h1 { font-size: 2.8em; margin-bottom: 20px; text-shadow: 2px 2px 6px rgba(0,0,0,0.5); }
         #loginScreen p { font-size: 1.3em; margin-bottom: 40px; }
         .btn-access {
-            width: 320px;
-            padding: 20px;
-            margin: 15px;
-            font-size: 1.5em;
-            font-weight: bold;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            width: 320px; padding: 20px; margin: 15px;
+            font-size: 1.5em; font-weight: bold; color: white;
+            border: none; border-radius: 10px; cursor: pointer;
+            transition: all 0.3s; box-shadow: 0 6px 15px rgba(0,0,0,0.3);
         }
         .btn-direccion { background: #c0392b; }
         .btn-profesores { background: #27ae60; }
@@ -53,109 +46,43 @@
 
         #mainApp { display: none; min-height: 100vh; }
         header {
-            background: #1e3c72;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            position: relative;
+            background: #1e3c72; color: white; padding: 20px;
+            text-align: center; position: relative;
         }
-        header img { height: 100px; margin-bottom: 10px; }
+        header img {
+            height: 100px; margin-bottom: 10px;
+            border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
         .logout-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: #c0392b;
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 6px;
-            cursor: pointer;
+            position: absolute; top: 20px; right: 20px;
+            background: #c0392b; color: white; border: none;
+            padding: 10px 18px; border-radius: 6px; cursor: pointer;
         }
-        .container {
-            width: 90%;
-            max-width: 1100px;
-            margin: 30px auto;
-            padding: 0 15px;
-        }
-        h2 {
-            color: #1e3c72;
-            border-bottom: 3px solid #2a5298;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        form {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 35px;
-        }
+        .container { width: 90%; max-width: 1100px; margin: 30px auto; padding: 0 15px; }
+        h2 { color: #1e3c72; border-bottom: 3px solid #2a5298; padding-bottom: 10px; margin-bottom: 20px; }
+        form { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 35px; }
         label { font-weight: bold; display: block; margin: 12px 0 6px; }
-        input, select {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 1em;
-        }
+        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 1em; }
         button:not(.btn-access):not(.logout-btn):not(.btn-delete-all) {
-            background: #2a5298;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1.05em;
+            background: #2a5298; color: white; padding: 12px 24px;
+            border: none; border-radius: 6px; cursor: pointer; font-size: 1.05em;
         }
         button:hover:not(.btn-access):not(.logout-btn):not(.btn-delete-all) { background: #1e3c72; }
-
         .btn-delete-all {
-            background: #e74c3c;
-            color: white;
-            padding: 14px 30px;
-            font-size: 1.2em;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 30px;
-            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+            background: #e74c3c; color: white; padding: 14px 30px;
+            font-size: 1.2em; font-weight: bold; border: none; border-radius: 8px;
+            cursor: pointer; margin-top: 30px; box-shadow: 0 4px 12px rgba(231,76,60,0.4);
         }
-        .btn-delete-all:hover {
-            background: #c0392b;
-            transform: translateY(-2px);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
+        .btn-delete-all:hover { background: #c0392b; transform: translateY(-2px); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
         th { background: #1e3c72; color: white; }
         .section { margin-bottom: 50px; }
         .hidden { display: none !important; }
-        #recordsContainer {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .delete-section {
-            background: #fff5f5;
-            border: 2px solid #e74c3c;
-            border-radius: 10px;
-            padding: 25px;
-            margin-top: 60px;
-            text-align: center;
-        }
-        .delete-section h3 {
-            color: #c0392b;
-            margin-bottom: 15px;
-        }
+        #recordsContainer { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .delete-section { background: #fff5f5; border: 2px solid #e74c3c; border-radius: 10px; padding: 25px; margin-top: 60px; text-align: center; }
+        .delete-section h3 { color: #c0392b; margin-bottom: 15px; }
+        #divTrimestre { margin: 15px 0; }
     </style>
 </head>
 <body>
@@ -169,7 +96,8 @@
 
 <div id="mainApp">
     <header>
-        <img src="https://i.ibb.co/kc1K1nZ/logo-jaime-escalante.png" alt="Logo U.E. Las Delicias" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAQMAAAD58v8AAAAABlBMVEUAAAD///+l2Z/dAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3gYBFzI0BrAAACtJREFUOMtjGAV2YMABAwACBwABAACTB0kAAAAASUVORK5CYII=';">
+        <img src="https://i.ibb.co/kc1K1nZ/logo-jaime-escalante.png" alt="Logo U.E. Las Delicias" 
+             onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiM0Q0E1RkYiLz48dGV4dCB4PSI1MCIgeT0iNjAiIGZvbnQtc2l6ZT0iNDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIj5MT0dPPC90ZXh0Pjwvc3ZnPg=='">
         <h1>Unidad Educativa Las Delicias<br>Prof. Jaime Escalante - La Paz, Bolivia</h1>
         <button class="logout-btn" id="logoutBtn">Cerrar Sesión</button>
     </header>
@@ -240,7 +168,6 @@
             </form>
         </div>
 
-        <!-- Nueva sección solo para DIRECCIÓN -->
         <div class="section hidden" id="sectionAdminTools">
             <div class="delete-section">
                 <h3>Zona de Administración - Borrado Total</h3>
@@ -257,6 +184,7 @@
             <select id="viewType">
                 <option value="course">Por Curso</option>
                 <option value="student">Por Estudiante</option>
+                <option value="trimestre">Por Trimestre</option>
             </select>
 
             <div id="viewByCourse" style="margin: 15px 0;">
@@ -269,6 +197,15 @@
                 <select id="selectCourseStudent"></select>
                 <label for="selectStudentView">Seleccionar Estudiante:</label>
                 <select id="selectStudentView"></select>
+            </div>
+
+            <div id="viewByTrimestre" style="display:none; margin: 15px 0;">
+                <label for="selectTrimestreVer">Seleccionar Trimestre:</label>
+                <select id="selectTrimestreVer">
+                    <option value="1er Trimestre">1er Trimestre</option>
+                    <option value="2do Trimestre">2do Trimestre</option>
+                    <option value="3er Trimestre">3er Trimestre</option>
+                </select>
             </div>
 
             <button id="viewRecordsBtn" style="margin: 20px 10px 0 0;">Ver Registros</button>
@@ -301,29 +238,34 @@ const CONTRASEÑA_DIRECCION = "JAIMEESCALANTE2026";
 let modoActual = null;
 
 // ────────────────────────────────────────────────
-// Funciones básicas (iguales a la versión anterior)
+// Cargar cursos en selects
 function updateCourseSelects() {
     const selects = [
         'selectCourseAddStudent', 'selectCourseIssue',
-        'selectCourseView', 'selectCourseStudent'
+        'selectCourseView', 'selectCourseStudent',
+        'selectCursoIncidencia'
     ];
     db.collection('courses').get().then(snapshot => {
         selects.forEach(id => {
             const select = document.getElementById(id);
-            select.innerHTML = '<option value="">-- Seleccione un curso --</option>';
-            snapshot.forEach(doc => {
-                const opt = document.createElement('option');
-                opt.value = doc.id;
-                opt.textContent = doc.id;
-                select.appendChild(opt);
-            });
+            if (select) {
+                select.innerHTML = '<option value="">-- Seleccione un curso --</option>';
+                snapshot.forEach(doc => {
+                    const opt = document.createElement('option');
+                    opt.value = doc.id;
+                    opt.textContent = doc.id;
+                    select.appendChild(opt);
+                });
+            }
         });
     }).catch(err => console.error("Error al cargar cursos:", err));
 }
 
+// Cargar estudiantes según curso
 function updateStudentSelect(courseSelectId, studentSelectId) {
     const course = document.getElementById(courseSelectId).value;
     const select = document.getElementById(studentSelectId);
+    if (!select) return;
     select.innerHTML = '<option value="">-- Seleccione un estudiante --</option>';
 
     if (!course) return;
@@ -356,8 +298,7 @@ function mostrarApp() {
     }
 }
 
-// ────────────────────────────────────────────────
-// Eventos de acceso
+// Login
 document.getElementById('btnDireccion').addEventListener('click', () => {
     const pass = prompt("Contraseña para DIRECCIÓN:");
     if (pass === CONTRASEÑA_DIRECCION) {
@@ -384,131 +325,15 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 });
 
 // ────────────────────────────────────────────────
-// Nuevo: Botón Borrar Todo (solo en modo Dirección)
-document.getElementById('btnBorrarTodo').addEventListener('click', () => {
-    if (!confirm("¿Estás absolutamente seguro?\nEsto BORRARÁ TODOS los cursos, estudiantes e incidencias de forma IRREVERSIBLE.")) {
-        return;
-    }
-
-    const pass = prompt("Confirma la contraseña para proceder con el borrado total:");
-    if (pass !== CONTRASEÑA_DIRECCION) {
-        alert("Contraseña incorrecta. Operación cancelada.");
-        return;
-    }
-
-    // Borrar toda la colección 'courses'
-    db.collection('courses').get().then(snapshot => {
-        if (snapshot.empty) {
-            alert("No hay datos para borrar.");
-            return;
-        }
-
-        const batch = db.batch();
-        snapshot.forEach(doc => {
-            batch.delete(doc.ref);
-        });
-
-        return batch.commit();
-    })
-    .then(() => {
-        alert("¡Todos los datos han sido borrados exitosamente!");
-        updateCourseSelects();
-    })
-    .catch(err => {
-        alert("Error al borrar los datos: " + err.message);
-        console.error(err);
-    });
-});
-
-// ────────────────────────────────────────────────
-// Resto de funciones (crear curso, agregar estudiante, registrar incidencia, ver registros, exportar PDF)
-// Son exactamente iguales a la versión anterior que funcionaba bien
-
-document.getElementById('addCourseForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const name = document.getElementById('courseName').value.trim();
-    if (!name) return alert("Ingrese nombre del curso");
-
-    db.collection('courses').doc(name).get().then(doc => {
-        if (doc.exists) {
-            alert("El curso ya existe");
-        } else {
-            db.collection('courses').doc(name).set({ students: [] })
-                .then(() => {
-                    alert("Curso creado");
-                    document.getElementById('courseName').value = '';
-                    updateCourseSelects();
-                })
-                .catch(err => alert("Error: " + err.message));
-        }
-    });
-});
-
-document.getElementById('addStudentForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const course = document.getElementById('selectCourseAddStudent').value;
-    const name = document.getElementById('studentName').value.trim();
-    if (!course || !name) return alert("Complete los campos");
-
-    db.collection('courses').doc(course).get().then(doc => {
-        if (!doc.exists) return alert("Curso no encontrado");
-
-        const data = doc.data();
-        if (data.students.some(s => s.name === name)) {
-            alert("El estudiante ya está en este curso");
-            return;
-        }
-
-        data.students.push({ name, issues: [] });
-        db.collection('courses').doc(course).update({ students: data.students })
-            .then(() => {
-                alert("Estudiante agregado");
-                document.getElementById('studentName').value = '';
-                updateStudentSelect('selectCourseIssue', 'selectStudent');
-                updateStudentSelect('selectCourseStudent', 'selectStudentView');
-            })
-            .catch(err => alert("Error: " + err.message));
-    });
-});
-
-document.getElementById('registerIssueForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const course = document.getElementById('selectCourseIssue').value;
-    const studentName = document.getElementById('selectStudent').value;
-    const trimestre = document.getElementById('trimestre').value;
-    const type = document.getElementById('issueType').value;
-    const subject = document.getElementById('subject').value;
-    const date = document.getElementById('issueDate').value;
-    const desc = document.getElementById('issueDescription').value.trim();
-
-    if (!course || !studentName || !trimestre || !type || !subject || !date || !desc) {
-        return alert("Complete todos los campos");
-    }
-
-    db.collection('courses').doc(course).get().then(doc => {
-        if (!doc.exists) return alert("Curso no encontrado");
-
-        const data = doc.data();
-        const student = data.students.find(s => s.name === studentName);
-        if (!student) return alert("Estudiante no encontrado");
-
-        student.issues.push({ trimestre, type, subject, date, description: desc });
-
-        db.collection('courses').doc(course).update({ students: data.students })
-            .then(() => {
-                alert("Incidencia registrada");
-                document.getElementById('issueDate').value = '';
-                document.getElementById('issueDescription').value = '';
-            })
-            .catch(err => alert("Error: " + err.message));
-    });
-});
-
+// Cambiar tipo de vista
 document.getElementById('viewType').addEventListener('change', function() {
-    document.getElementById('viewByCourse').style.display = this.value === 'course' ? 'block' : 'none';
-    document.getElementById('viewByStudent').style.display = this.value === 'student' ? 'block' : 'none';
+    const type = this.value;
+    document.getElementById('viewByCourse').style.display = type === 'course' ? 'block' : 'none';
+    document.getElementById('viewByStudent').style.display = type === 'student' ? 'block' : 'none';
+    document.getElementById('viewByTrimestre').style.display = type === 'trimestre' ? 'block' : 'none';
 });
 
+// Ver registros
 document.getElementById('viewRecordsBtn').addEventListener('click', () => {
     const viewType = document.getElementById('viewType').value;
     const container = document.getElementById('recordsTable');
@@ -531,7 +356,7 @@ document.getElementById('viewRecordsBtn').addEventListener('click', () => {
             });
             renderTable(issues, title);
         });
-    } else {
+    } else if (viewType === 'student') {
         const course = document.getElementById('selectCourseStudent').value;
         const studentName = document.getElementById('selectStudentView').value;
         if (!course || !studentName) return alert('Seleccione curso y estudiante');
@@ -544,6 +369,24 @@ document.getElementById('viewRecordsBtn').addEventListener('click', () => {
             if (!student) return alert('Estudiante no encontrado');
             student.issues.forEach(i => issues.push({ student: studentName, ...i }));
             renderTable(issues, title);
+        });
+    } else if (viewType === 'trimestre') {
+        const trimestre = document.getElementById('selectTrimestreVer').value;
+        if (!trimestre) return alert('Seleccione un trimestre');
+        title = `Registros de ${trimestre}`;
+
+        db.collection('courses').get().then(snapshot => {
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                data.students.forEach(s => {
+                    s.issues.forEach(i => {
+                        if (i.trimestre === trimestre) {
+                            issues.push({ student: s.name, curso: doc.id, ...i });
+                        }
+                    });
+                });
+            });
+            renderTableTrimestre(issues, title);
         });
     }
 });
@@ -562,7 +405,9 @@ function renderTable(issues, title) {
     </tr></thead><tbody>`;
 
     issues.forEach(i => {
-        const typeText = i.type === 'falta' ? 'Falta' : i.type === 'incumplimiento' ? 'Incumplimiento' : 'Indisciplina';
+        const typeText = i.type === 'falta' ? 'Falta' : 
+                         i.type === 'incumplimiento' ? 'Incumplimiento' : 
+                         i.type === 'indisciplina' ? 'Indisciplina' : 'Citación';
         html += `<tr>
             <td>${i.student}</td>
             <td>${i.trimestre}</td>
@@ -578,6 +423,39 @@ function renderTable(issues, title) {
     document.getElementById('exportPdfBtn').style.display = 'inline-block';
 }
 
+function renderTableTrimestre(issues, title) {
+    const container = document.getElementById('recordsTable');
+    if (issues.length === 0) {
+        container.innerHTML = '<p style="text-align:center; padding:30px;">No hay incidencias en este trimestre.</p>';
+        return;
+    }
+
+    issues.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+    let html = `<h3>${title}</h3><table><thead><tr>
+        <th>Curso</th><th>Estudiante</th><th>Tipo</th><th>Materia</th><th>Fecha</th><th>Descripción</th>
+    </tr></thead><tbody>`;
+
+    issues.forEach(i => {
+        const typeText = i.type === 'falta' ? 'Falta' : 
+                         i.type === 'incumplimiento' ? 'Incumplimiento' : 
+                         i.type === 'indisciplina' ? 'Indisciplina' : 'Citación';
+        html += `<tr>
+            <td>${i.curso}</td>
+            <td>${i.student}</td>
+            <td>${typeText}</td>
+            <td>${i.subject}</td>
+            <td>${i.date}</td>
+            <td>${i.description}</td>
+        </tr>`;
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+    document.getElementById('exportPdfBtn').style.display = 'inline-block';
+}
+
+// Exportar PDF
 document.getElementById('exportPdfBtn').addEventListener('click', async () => {
     const { jsPDF } = window.jspdf;
     const container = document.getElementById('recordsContainer');
@@ -591,8 +469,13 @@ document.getElementById('exportPdfBtn').addEventListener('click', async () => {
     pdf.save('Reporte_Incidencias.pdf');
 });
 
-document.getElementById('selectCourseIssue').addEventListener('change', () => updateStudentSelect('selectCourseIssue', 'selectStudent'));
-document.getElementById('selectCourseStudent').addEventListener('change', () => updateStudentSelect('selectCourseStudent', 'selectStudentView'));
+// Actualizaciones de selects
+document.getElementById('selectCourseIssue')?.addEventListener('change', () => updateStudentSelect('selectCourseIssue', 'selectStudent'));
+document.getElementById('selectCursoIncidencia')?.addEventListener('change', () => updateStudentSelect('selectCursoIncidencia', 'selectEstudianteIncidencia'));
+document.getElementById('selectCourseStudent')?.addEventListener('change', () => updateStudentSelect('selectCourseStudent', 'selectStudentView'));
+
+// Inicialización
+mostrarApp();
 </script>
 </body>
 </html>
