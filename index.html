@@ -446,4 +446,68 @@ document.getElementById('viewStudentBtn').addEventListener('click', () => {
     const trimestre = document.getElementById('selectTrimestreEstudiante').value;
 
     if (!course || !studentName) {
-        alert
+        alert("Seleccione curso y estudiante primero");
+        return;
+    }
+
+    const container = document.getElementById('recordsTable');
+    container.innerHTML = '<p>Cargando...</p>';
+    document.getElementById('exportPdfBtn').style.display = 'none';
+
+    db.collection('courses').doc(course).get().then(doc => {
+        if (!doc.exists) return container.innerHTML = '<p>Curso no encontrado.</p>';
+
+        const data = doc.data();
+        const student = data.students.find(s => s.name === studentName);
+        if (!student) return container.innerHTML = '<p>Estudiante no encontrado.</p>';
+
+        let issues = student.issues || [];
+        if (trimestre) {
+            issues = issues.filter(i => i.trimestre === trimestre);
+        }
+
+        if (issues.length === 0) {
+            container.innerHTML = `<p>No hay incidencias${trimestre ? ' en ' + trimestre : ''} para ${studentName}.</p>`;
+            return;
+        }
+
+        issues.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+        let html = `<h3>Registros de ${studentName} (${course}) ${trimestre ? '- ' + trimestre : ''}</h3>`;
+        html += '<table><thead><tr><th>Trimestre</th><th>Tipo</th><th>Materia</th><th>Fecha</th><th>Descripción</th></tr></thead><tbody>';
+
+        issues.forEach(i => {
+            const typeText = {
+                falta: 'Falta',
+                incumplimiento: 'Incumplimiento',
+                indisciplina: 'Indisciplina',
+                citacion: 'Citación'
+            }[i.type] || i.type;
+
+            html += `<tr>
+                <td>${i.trimestre}</td>
+                <td>${typeText}</td>
+                <td>${i.subject}</td>
+                <td>${i.date}</td>
+                <td>${i.description}</td>
+            </tr>`;
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+        document.getElementById('exportPdfBtn').style.display = 'inline-block';
+    }).catch(err => {
+        container.innerHTML = '<p>Error al cargar datos.</p>';
+        console.error(err);
+    });
+});
+
+// Resto de funciones (crear curso, agregar estudiante, registrar incidencia, borrar todo, etc.)
+// Mantienen la misma lógica que ya funcionaba bien en tu versión anterior
+
+// Inicialización
+mostrarApp();
+updateCourseSelects();
+</script>
+</body>
+</html>
