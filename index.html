@@ -1,64 +1,340 @@
-<!-- ... (tu <head> y estilos permanecen iguales) ... -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>U.E. Las Delicias - Prof. Jaime Escalante</title>
 
-<div class="section">
-    <h2>4. Ver Registros</h2>
-    <label for="viewType">Tipo de vista:</label>
-    <select id="viewType">
-        <option value="course">Por Curso</option>
-        <option value="student">Por Estudiante</option>
-    </select>
+    <!-- Firebase Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
-    <!-- Vista por Curso -->
-    <div id="viewByCourse" style="display:none; margin-top:20px;">
-        <label for="selectCourseView">Seleccionar Curso:</label>
-        <select id="selectCourseView"></select>
-    </div>
+    <!-- jsPDF + html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- Vista por Estudiante (con trimestres) -->
-    <div id="viewByStudent" style="display:none; margin-top:20px;">
-        <div style="display:flex; flex-wrap:wrap; gap:20px; align-items:flex-end;">
-            <div style="flex:1; min-width:220px;">
-                <label for="selectCourseStudent">Seleccionar Curso:</label>
-                <select id="selectCourseStudent"></select>
-            </div>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            color: #333;
+        }
+        #loginScreen {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to bottom, #1e3c72, #2a5298);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        #loginScreen h1 { font-size: 2.8em; margin-bottom: 20px; text-shadow: 2px 2px 6px rgba(0,0,0,0.5); }
+        #loginScreen p { font-size: 1.3em; margin-bottom: 40px; }
+        .btn-access {
+            width: 320px;
+            padding: 20px;
+            margin: 15px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        .btn-direccion { background: #c0392b; }
+        .btn-profesores { background: #27ae60; }
+        .btn-access:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
 
-            <div style="flex:1; min-width:220px;">
-                <label for="selectStudentView">Seleccionar Estudiante:</label>
-                <select id="selectStudentView"></select>
-            </div>
+        #mainApp { display: none; min-height: 100vh; }
+        header {
+            background: #1e3c72;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        header img { 
+            height: 100px; 
+            margin-bottom: 10px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
+        }
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #c0392b;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+        h2 {
+            color: #1e3c72;
+            border-bottom: 3px solid #2a5298;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        form {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 35px;
+        }
+        label { font-weight: bold; display: block; margin: 12px 0 6px; }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        button:not(.btn-access):not(.logout-btn):not(.btn-delete-all) {
+            background: #2a5298;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.05em;
+        }
+        button:hover:not(.btn-access):not(.logout-btn):not(.btn-delete-all) { background: #1e3c72; }
 
-            <div style="flex:1; min-width:220px;" id="divTrimestreEstudiante" class="hidden">
-                <label for="selectTrimestreEstudiante">Seleccionar Trimestre:</label>
-                <select id="selectTrimestreEstudiante">
-                    <option value="">-- Todos --</option>
+        .btn-delete-all {
+            background: #e74c3c;
+            color: white;
+            padding: 14px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 30px;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+        }
+        .btn-delete-all:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #1e3c72; color: white; }
+        .section { margin-bottom: 50px; }
+        .hidden { display: none !important; }
+        #recordsContainer {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .delete-section {
+            background: #fff5f5;
+            border: 2px solid #e74c3c;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 60px;
+            text-align: center;
+        }
+        .delete-section h3 {
+            color: #c0392b;
+            margin-bottom: 15px;
+        }
+        .filter-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; margin: 20px 0; }
+        .filter-row > div { flex: 1; min-width: 220px; }
+    </style>
+</head>
+<body>
+
+<div id="loginScreen">
+    <h1>U.E. Las Delicias<br>Prof. Jaime Escalante</h1>
+    <p>Sistema de Registro de Incidencias</p>
+    <button class="btn-access btn-direccion" id="btnDireccion">DIRECCIÓN</button>
+    <button class="btn-access btn-profesores" id="btnProfesores">PROFESORES</button>
+</div>
+
+<div id="mainApp">
+    <header>
+        <img src="https://i.ibb.co/kc1K1nZ/logo-jaime-escalante.png" alt="Logo U.E. Las Delicias" 
+             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiM0Q0E1RkYiLz48dGV4dCB4PSI1MCIgeT0iNjAiIGZvbnQtc2l6ZT0iNDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIj5MT0dPPC90ZXh0Pjwvc3ZnPg=='">
+        <h1>Unidad Educativa Las Delicias<br>Prof. Jaime Escalante - La Paz, Bolivia</h1>
+        <button class="logout-btn" id="logoutBtn">Cerrar Sesión</button>
+    </header>
+
+    <div class="container">
+
+        <div class="section" id="sectionCrearCurso">
+            <h2>1. Crear un Nuevo Curso</h2>
+            <form id="addCourseForm">
+                <label for="courseName">Nombre del Curso (ej: 5to A):</label>
+                <input type="text" id="courseName" required placeholder="Ej: 10mo Humanidades">
+                <button type="submit">Crear Curso</button>
+            </form>
+        </div>
+
+        <div class="section" id="sectionAgregarEstudiante">
+            <h2>2. Agregar Estudiante a un Curso</h2>
+            <form id="addStudentForm">
+                <label for="selectCourseAddStudent">Seleccionar Curso:</label>
+                <select id="selectCourseAddStudent" required></select>
+                <label for="studentName">Nombre Completo del Estudiante:</label>
+                <input type="text" id="studentName" required placeholder="Ej: Juan Pérez Rojas">
+                <button type="submit">Agregar Estudiante</button>
+            </form>
+        </div>
+
+        <div class="section" id="sectionRegistrarIncidencia">
+            <h2>3. Registrar Incidencia</h2>
+            <form id="registerIssueForm">
+                <label for="selectCourseIssue">Seleccionar Curso:</label>
+                <select id="selectCourseIssue" required></select>
+                <label for="selectStudent">Seleccionar Estudiante:</label>
+                <select id="selectStudent" required></select>
+                <label for="trimestre">Trimestre:</label>
+                <select id="trimestre" required>
                     <option value="1er Trimestre">1er Trimestre</option>
                     <option value="2do Trimestre">2do Trimestre</option>
                     <option value="3er Trimestre">3er Trimestre</option>
                 </select>
+                <label for="issueType">Tipo de Incidencia:</label>
+                <select id="issueType" required>
+                    <option value="falta">Falta (Ausencia)</option>
+                    <option value="incumplimiento">Incumplimiento</option>
+                    <option value="indisciplina">Indisciplina</option>
+                    <option value="citacion">Citación</option>
+                </select>
+                <label for="subject">Materia:</label>
+                <select id="subject" required>
+                    <option value="MAT">MAT - Matemáticas</option>
+                    <option value="LCO">LCO - Lenguaje</option>
+                    <option value="LEX">LEX - Inglés</option>
+                    <option value="CS">CS - Ciencias Sociales</option>
+                    <option value="EFI">EFI - Educación Física</option>
+                    <option value="EMU">EMU - Música</option>
+                    <option value="VER">VER - Religión</option>
+                    <option value="APV">APV - Artes Plásticas</option>
+                    <option value="CFP">CFP - Filosofía</option>
+                    <option value="TTG">TTG - Tecnología</option>
+                    <option value="BG">BG - Biología</option>
+                    <option value="CQ">CQ - Química</option>
+                    <option value="CF">CF - Física</option>
+                </select>
+                <label for="issueDate">Fecha:</label>
+                <input type="date" id="issueDate" required>
+                <label for="issueDescription">Descripción:</label>
+                <input type="text" id="issueDescription" required placeholder="Describa la incidencia">
+                <button type="submit">Registrar Incidencia</button>
+            </form>
+        </div>
+
+        <!-- Sección solo para DIRECCIÓN -->
+        <div class="section hidden" id="sectionAdminTools">
+            <div class="delete-section">
+                <h3>Zona de Administración - Borrado Total</h3>
+                <p style="color: #c0392b; font-weight: bold; margin-bottom: 20px;">
+                    ¡Cuidado! Esta acción eliminará TODOS los cursos, estudiantes e incidencias permanentemente.
+                </p>
+                <button class="btn-delete-all" id="btnBorrarTodo">BORRAR TODOS LOS DATOS</button>
             </div>
         </div>
 
-        <button id="viewStudentBtn" style="margin-top:20px;">Ver Registros del Estudiante</button>
-    </div>
+        <div class="section">
+            <h2>4. Ver Registros</h2>
+            <label for="viewType">Tipo de vista:</label>
+            <select id="viewType">
+                <option value="course">Por Curso</option>
+                <option value="student">Por Estudiante</option>
+            </select>
 
-    <button id="viewRecordsBtn" style="margin:20px 10px 0 0;">Ver Registros</button>
-    <button id="exportPdfBtn" style="display:none; margin-left:10px;">Exportar a PDF</button>
+            <!-- Vista por Curso -->
+            <div id="viewByCourse" style="display:none; margin-top:20px;">
+                <label for="selectCourseView">Seleccionar Curso:</label>
+                <select id="selectCourseView"></select>
+            </div>
 
-    <div id="recordsContainer" style="margin-top:30px;">
-        <div id="recordsTable"></div>
+            <!-- Vista por Estudiante -->
+            <div id="viewByStudent" style="display:none; margin-top:20px;">
+                <div class="filter-row">
+                    <div>
+                        <label for="selectCourseStudent">Seleccionar Curso:</label>
+                        <select id="selectCourseStudent"></select>
+                    </div>
+
+                    <div>
+                        <label for="selectStudentView">Seleccionar Estudiante:</label>
+                        <select id="selectStudentView"></select>
+                    </div>
+
+                    <div id="divTrimestreEstudiante" class="hidden">
+                        <label for="selectTrimestreEstudiante">Seleccionar Trimestre:</label>
+                        <select id="selectTrimestreEstudiante">
+                            <option value="">-- Todos los trimestres --</option>
+                            <option value="1er Trimestre">1er Trimestre</option>
+                            <option value="2do Trimestre">2do Trimestre</option>
+                            <option value="3er Trimestre">3er Trimestre</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="viewStudentBtn" style="margin-top:20px;">Ver Registros del Estudiante</button>
+            </div>
+
+            <div id="recordsContainer" style="margin-top:40px;">
+                <div id="recordsTable"></div>
+            </div>
+
+            <button id="exportPdfBtn" style="display:none; margin-top:20px;">Exportar a PDF</button>
+        </div>
+
     </div>
 </div>
 
-<!-- ... resto de tu HTML ... -->
-
 <script>
-// ... (tu firebaseConfig y otras funciones permanecen iguales) ...
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyCn6Q-HxzCtd1rln_RSyyYgAvr_uz2pQ9A",
+  authDomain: "gestion-ue-las-delicias.firebaseapp.com",
+  projectId: "gestion-ue-las-delicias",
+  storageBucket: "gestion-ue-las-delicias.firebasestorage.app",
+  messagingSenderId: "548742390776",
+  appId: "1:548742390776:web:d3ea4cc96b8711568cac0d",
+  measurementId: "G-HSC2D59DGY"
+};
 
-// Cargar cursos en TODOS los selects al iniciar
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const CONTRASEÑA_DIRECCION = "JAIMEESCALANTE2026";
+let modoActual = null;
+
+// Cargar cursos en todos los selects relevantes
 function updateCourseSelects() {
     const selects = [
-        'selectCourseAddStudent', 'selectCourseIssue',
-        'selectCourseView', 'selectCourseStudent'
+        'selectCourseAddStudent',
+        'selectCourseIssue',
+        'selectCourseView',
+        'selectCourseStudent'
     ];
     db.collection('courses').get().then(snapshot => {
         selects.forEach(id => {
@@ -76,7 +352,7 @@ function updateCourseSelects() {
     }).catch(err => console.error("Error cargando cursos:", err));
 }
 
-// Cargar estudiantes cuando se selecciona curso
+// Cargar estudiantes cuando cambia el curso
 function updateStudentSelect(courseSelectId, studentSelectId) {
     const course = document.getElementById(courseSelectId)?.value;
     const select = document.getElementById(studentSelectId);
@@ -95,7 +371,7 @@ function updateStudentSelect(courseSelectId, studentSelectId) {
                 opt.textContent = s.name;
                 select.appendChild(opt);
             });
-            // Mostrar selector de trimestre solo si ya hay estudiante seleccionado
+            // Mostrar selector de trimestre si estamos en vista por estudiante
             if (studentSelectId === 'selectStudentView') {
                 document.getElementById('divTrimestreEstudiante').classList.toggle('hidden', !course || !select.value);
             }
@@ -103,7 +379,49 @@ function updateStudentSelect(courseSelectId, studentSelectId) {
     }).catch(err => console.error("Error cargando estudiantes:", err));
 }
 
-// Mostrar/ocultar vistas
+// Mostrar la aplicación según rol
+function mostrarApp() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    updateCourseSelects();
+
+    if (modoActual === 'direccion') {
+        document.getElementById('sectionAdminTools').classList.remove('hidden');
+    }
+
+    if (modoActual === 'profesor') {
+        document.getElementById('sectionCrearCurso').classList.add('hidden');
+        document.getElementById('sectionAgregarEstudiante').classList.add('hidden');
+    }
+}
+
+// Eventos de login
+document.getElementById('btnDireccion').addEventListener('click', () => {
+    const pass = prompt("Contraseña para DIRECCIÓN:");
+    if (pass === CONTRASEÑA_DIRECCION) {
+        modoActual = 'direccion';
+        mostrarApp();
+    } else {
+        alert("Contraseña incorrecta.");
+    }
+});
+
+document.getElementById('btnProfesores').addEventListener('click', () => {
+    if (confirm("¿Ingresar como PROFESOR?\n(Solo registro de incidencias)")) {
+        modoActual = 'profesor';
+        mostrarApp();
+    }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    if (confirm("¿Cerrar sesión?")) {
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('loginScreen').style.display = 'flex';
+        modoActual = null;
+    }
+});
+
+// Mostrar/ocultar vistas según tipo seleccionado
 document.getElementById('viewType').addEventListener('change', function() {
     const type = this.value;
     document.getElementById('viewByCourse').style.display = type === 'course' ? 'block' : 'none';
@@ -115,7 +433,7 @@ document.getElementById('selectCourseStudent').addEventListener('change', functi
     updateStudentSelect('selectCourseStudent', 'selectStudentView');
 });
 
-// Mostrar selector de trimestre solo cuando ya hay estudiante
+// Mostrar selector de trimestre solo cuando ya hay estudiante seleccionado
 document.getElementById('selectStudentView').addEventListener('change', function() {
     const hasSelection = document.getElementById('selectCourseStudent').value && this.value;
     document.getElementById('divTrimestreEstudiante').classList.toggle('hidden', !hasSelection);
@@ -128,63 +446,4 @@ document.getElementById('viewStudentBtn').addEventListener('click', () => {
     const trimestre = document.getElementById('selectTrimestreEstudiante').value;
 
     if (!course || !studentName) {
-        alert("Seleccione curso y estudiante primero");
-        return;
-    }
-
-    const container = document.getElementById('recordsTable');
-    container.innerHTML = '<p>Cargando registros...</p>';
-    document.getElementById('exportPdfBtn').style.display = 'none';
-
-    db.collection('courses').doc(course).get().then(doc => {
-        if (!doc.exists) return container.innerHTML = '<p>Curso no encontrado.</p>';
-
-        const data = doc.data();
-        const student = data.students.find(s => s.name === studentName);
-        if (!student) return container.innerHTML = '<p>Estudiante no encontrado.</p>';
-
-        let issues = student.issues || [];
-        if (trimestre) {
-            issues = issues.filter(i => i.trimestre === trimestre);
-        }
-
-        if (issues.length === 0) {
-            container.innerHTML = `<p>No hay incidencias${trimestre ? ' en ' + trimestre : ''} para ${studentName}.</p>`;
-            return;
-        }
-
-        issues.sort((a,b) => new Date(b.date) - new Date(a.date));
-
-        let html = `<h3>Registros de ${studentName} (${course}) ${trimestre ? '- ' + trimestre : ''}</h3>`;
-        html += '<table><thead><tr><th>Trimestre</th><th>Tipo</th><th>Materia</th><th>Fecha</th><th>Descripción</th></tr></thead><tbody>';
-
-        issues.forEach(i => {
-            const typeText = {
-                falta: 'Falta',
-                incumplimiento: 'Incumplimiento',
-                indisciplina: 'Indisciplina',
-                citacion: 'Citación'
-            }[i.type] || i.type;
-
-            html += `<tr>
-                <td>${i.trimestre}</td>
-                <td>${typeText}</td>
-                <td>${i.subject}</td>
-                <td>${i.date}</td>
-                <td>${i.description}</td>
-            </tr>`;
-        });
-
-        html += '</tbody></table>';
-        container.innerHTML = html;
-        document.getElementById('exportPdfBtn').style.display = 'inline-block';
-    }).catch(err => {
-        container.innerHTML = '<p>Error al cargar: ' + err.message + '</p>';
-        console.error(err);
-    });
-});
-
-// Inicializar al cargar
-updateCourseSelects();
-mostrarApp();
-</script>
+        alert
