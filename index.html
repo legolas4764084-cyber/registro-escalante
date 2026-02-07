@@ -261,44 +261,31 @@
 
         <div class="section">
             <h2>4. Ver Registros</h2>
-            <label for="viewType">Tipo de vista:</label>
-            <select id="viewType">
-                <option value="course">Por Curso</option>
-                <option value="student">Por Estudiante</option>
-            </select>
 
-            <!-- Vista por Curso -->
-            <div id="viewByCourse" style="display:none; margin-top:20px;">
-                <label for="selectCourseView">Seleccionar Curso:</label>
-                <select id="selectCourseView"></select>
-            </div>
-
-            <!-- Vista por Estudiante -->
-            <div id="viewByStudent" style="display:none; margin-top:20px;">
-                <div class="filter-row">
-                    <div>
-                        <label for="selectCourseStudent">Seleccionar Curso:</label>
-                        <select id="selectCourseStudent"></select>
-                    </div>
-
-                    <div>
-                        <label for="selectStudentView">Seleccionar Estudiante:</label>
-                        <select id="selectStudentView"></select>
-                    </div>
-
-                    <div id="divTrimestreEstudiante" class="hidden">
-                        <label for="selectTrimestreEstudiante">Seleccionar Trimestre:</label>
-                        <select id="selectTrimestreEstudiante">
-                            <option value="">-- Todos los trimestres --</option>
-                            <option value="1er Trimestre">1er Trimestre</option>
-                            <option value="2do Trimestre">2do Trimestre</option>
-                            <option value="3er Trimestre">3er Trimestre</option>
-                        </select>
-                    </div>
+            <!-- Vista directa por Estudiante -->
+            <div class="filter-row">
+                <div>
+                    <label for="selectCourseStudent">Seleccionar Curso:</label>
+                    <select id="selectCourseStudent"></select>
                 </div>
 
-                <button id="viewStudentBtn" style="margin-top:20px;">Ver Registros del Estudiante</button>
+                <div>
+                    <label for="selectStudentView">Seleccionar Estudiante:</label>
+                    <select id="selectStudentView"></select>
+                </div>
+
+                <div id="divTrimestreEstudiante" class="hidden">
+                    <label for="selectTrimestreEstudiante">Seleccionar Trimestre:</label>
+                    <select id="selectTrimestreEstudiante">
+                        <option value="">-- Todos los trimestres --</option>
+                        <option value="1er Trimestre">1er Trimestre</option>
+                        <option value="2do Trimestre">2do Trimestre</option>
+                        <option value="3er Trimestre">3er Trimestre</option>
+                    </select>
+                </div>
             </div>
+
+            <button id="viewStudentBtn" style="margin-top:20px;">Ver Registros del Estudiante</button>
 
             <div id="recordsContainer" style="margin-top:40px;">
                 <div id="recordsTable"></div>
@@ -333,7 +320,6 @@ function updateCourseSelects() {
     const selects = [
         'selectCourseAddStudent',
         'selectCourseIssue',
-        'selectCourseView',
         'selectCourseStudent'
     ];
     db.collection('courses').get().then(snapshot => {
@@ -387,6 +373,8 @@ function mostrarApp() {
 
     if (modoActual === 'direccion') {
         document.getElementById('sectionAdminTools').classList.remove('hidden');
+        document.getElementById('sectionCrearCurso').classList.remove('hidden');
+        document.getElementById('sectionAgregarEstudiante').classList.remove('hidden');
     }
 
     if (modoActual === 'profesor') {
@@ -419,13 +407,6 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
         document.getElementById('loginScreen').style.display = 'flex';
         modoActual = null;
     }
-});
-
-// Mostrar/ocultar vistas según tipo seleccionado
-document.getElementById('viewType').addEventListener('change', function() {
-    const type = this.value;
-    document.getElementById('viewByCourse').style.display = type === 'course' ? 'block' : 'none';
-    document.getElementById('viewByStudent').style.display = type === 'student' ? 'block' : 'none';
 });
 
 // Cargar estudiantes al cambiar curso en vista por estudiante
@@ -502,11 +483,124 @@ document.getElementById('viewStudentBtn').addEventListener('click', () => {
     });
 });
 
-// Resto de funciones (crear curso, agregar estudiante, registrar incidencia, borrar todo, etc.)
-// Mantienen la misma lógica que ya funcionaba bien en tu versión anterior
+// Función para exportar a PDF
+document.getElementById('exportPdfBtn').addEventListener('click', async () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const content = document.getElementById('recordsTable');
+    const canvas = await html2canvas(content, { scale: 2 });
+    const imgData = canvas.toDataURL('image/png');
+    const imgWidth = 180;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    doc.addImage(imgData, 'PNG', 15, 40, imgWidth, imgHeight);
+    doc.save('registros_incidencias.pdf');
+});
+
+// Crear curso
+document.getElementById('addCourseForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const courseName = document.getElementById('courseName').value.trim();
+    if (!courseName) return alert('Ingrese un nombre de curso válido.');
+
+    db.collection('courses').doc(courseName).set({
+        students: []
+    }).then(() => {
+        alert('Curso creado exitosamente.');
+        document.getElementById('courseName').value = '';
+        updateCourseSelects();
+    }).catch(err => {
+        console.error('Error creando curso:', err);
+        alert('Error al crear el curso.');
+    });
+});
+
+// Agregar estudiante
+document.getElementById('addStudentForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const course = document.getElementById('selectCourseAddStudent').value;
+    const studentName = document.getElementById('studentName').value.trim();
+    if (!course || !studentName) return alert('Seleccione curso y nombre válido.');
+
+    db.collection('courses').doc(course).get().then(doc => {
+        if (doc.exists) {
+            const students = doc.data().students || [];
+            if (students.some(s => s.name === studentName)) {
+                return alert('El estudiante ya existe en este curso.');
+            }
+            students.push({ name: studentName, issues: [] });
+            return db.collection('courses').doc(course).update({ students });
+        } else {
+            alert('Curso no encontrado.');
+        }
+    }).then(() => {
+        alert('Estudiante agregado exitosamente.');
+        document.getElementById('studentName').value = '';
+    }).catch(err => {
+        console.error('Error agregando estudiante:', err);
+        alert('Error al agregar estudiante.');
+    });
+});
+
+// Registrar incidencia
+document.getElementById('registerIssueForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const course = document.getElementById('selectCourseIssue').value;
+    const studentName = document.getElementById('selectStudent').value;
+    const trimestre = document.getElementById('trimestre').value;
+    const type = document.getElementById('issueType').value;
+    const subject = document.getElementById('subject').value;
+    const date = document.getElementById('issueDate').value;
+    const description = document.getElementById('issueDescription').value.trim();
+
+    if (!course || !studentName || !trimestre || !type || !subject || !date || !description) {
+        return alert('Complete todos los campos.');
+    }
+
+    db.collection('courses').doc(course).get().then(doc => {
+        if (doc.exists) {
+            const students = doc.data().students || [];
+            const studentIndex = students.findIndex(s => s.name === studentName);
+            if (studentIndex === -1) return alert('Estudiante no encontrado.');
+
+            const issue = { trimestre, type, subject, date, description };
+            students[studentIndex].issues = students[studentIndex].issues || [];
+            students[studentIndex].issues.push(issue);
+            return db.collection('courses').doc(course).update({ students });
+        } else {
+            alert('Curso no encontrado.');
+        }
+    }).then(() => {
+        alert('Incidencia registrada exitosamente.');
+        document.getElementById('registerIssueForm').reset();
+    }).catch(err => {
+        console.error('Error registrando incidencia:', err);
+        alert('Error al registrar incidencia.');
+    });
+});
+
+// Borrar todos los datos
+document.getElementById('btnBorrarTodo').addEventListener('click', () => {
+    if (confirm('¿Está seguro de borrar TODOS los datos? Esta acción es irreversible.')) {
+        db.collection('courses').get().then(snapshot => {
+            const batch = db.batch();
+            snapshot.forEach(doc => batch.delete(doc.ref));
+            return batch.commit();
+        }).then(() => {
+            alert('Todos los datos han sido borrados.');
+            updateCourseSelects();
+        }).catch(err => {
+            console.error('Error borrando datos:', err);
+            alert('Error al borrar datos.');
+        });
+    }
+});
+
+// Cargar estudiantes al cambiar curso en registro de incidencia
+document.getElementById('selectCourseIssue').addEventListener('change', function() {
+    updateStudentSelect('selectCourseIssue', 'selectStudent');
+});
 
 // Inicialización
-mostrarApp();
 updateCourseSelects();
 </script>
 </body>
