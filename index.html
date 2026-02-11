@@ -8,6 +8,7 @@
     <!-- Firebase Compat -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 
     <!-- jsPDF + html2canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -184,7 +185,7 @@
 
     <div class="container">
 
-        <div class="section" id="sectionCrearCurso">
+        <div class="section hidden" id="sectionCrearCurso">
             <h2>1. Crear un Nuevo Curso</h2>
             <form id="addCourseForm">
                 <label for="courseName">Nombre del Curso (ej: 5to A):</label>
@@ -193,11 +194,39 @@
             </form>
         </div>
 
-        <div class="section" id="sectionAgregarEstudiante">
-            <h2>2. Agregar Estudiante a un Curso</h2>
-            <form id="addStudentForm">
+        <div class="section hidden" id="sectionAgregarEstudiante">
+            <h2>2. Agregar Estudiantes a un Curso</h2>
+            
+            <form id="addStudentsForm">
                 <label for="selectCourseAddStudent">Seleccionar Curso:</label>
                 <select id="selectCourseAddStudent" required></select>
+
+                <label for="fileStudents">Subir lista de estudiantes (TXT o CSV):</label>
+                <input type="file" id="fileStudents" accept=".txt, .csv" required>
+
+                <div id="csvPreview" style="margin: 15px 0; max-height: 200px; overflow-y: auto; display: none; background: #f8f9fa; padding: 12px; border: 1px solid #ccc; border-radius: 6px;"></div>
+
+                <p style="font-size: 0.9em; color: #555; margin: 10px 0;">
+                    Formato recomendado (una columna):<br>
+                    Puedes incluir o no el encabezado "Nombre"
+                </p>
+                <pre style="background:#f8f8f8; padding:10px; border-radius:6px; font-size:0.95em; margin-bottom:15px;">
+Nombre
+Juan Pérez Gómez
+María López Ramírez
+Ana Fernández S.
+Carlos A. Mamani
+                </pre>
+
+                <button type="submit">Validar y Agregar Estudiantes</button>
+            </form>
+
+            <!-- Opción individual -->
+            <hr style="margin: 40px 0 20px;">
+            <h3>Agregar un estudiante individualmente:</h3>
+            <form id="addStudentForm">
+                <label for="selectCourseAddSingle">Seleccionar Curso:</label>
+                <select id="selectCourseAddSingle" required></select>
                 <label for="studentName">Nombre Completo del Estudiante:</label>
                 <input type="text" id="studentName" required placeholder="Ej: Juan Pérez Rojas">
                 <button type="submit">Agregar Estudiante</button>
@@ -309,8 +338,18 @@ const firebaseConfig = {
   measurementId: "G-HSC2D59DGY"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore(app);
+const auth = firebase.auth(app);
+
+// Sign in anonymously to allow writes if rules require auth
+auth.signInAnonymously()
+  .then(() => {
+    console.log('Signed in anonymously');
+  })
+  .catch((error) => {
+    console.error('Error signing in anonymously', error);
+  });
 
 const CONTRASEÑA_DIRECCION = "JAIMEESCALANTE2026";
 let modoActual = null;
@@ -319,6 +358,7 @@ let modoActual = null;
 function updateCourseSelects() {
     const selects = [
         'selectCourseAddStudent',
+        'selectCourseAddSingle',
         'selectCourseIssue',
         'selectCourseStudent'
     ];
@@ -359,7 +399,8 @@ function updateStudentSelect(courseSelectId, studentSelectId) {
             });
             // Mostrar selector de trimestre si estamos en vista por estudiante
             if (studentSelectId === 'selectStudentView') {
-                document.getElementById('divTrimestreEstudiante').classList.toggle('hidden', !course || !select.value);
+                const student = select.value;
+                document.getElementById('divTrimestreEstudiante').classList.toggle('hidden', !course || !student);
             }
         }
     }).catch(err => console.error("Error cargando estudiantes:", err));
@@ -375,11 +416,10 @@ function mostrarApp() {
         document.getElementById('sectionAdminTools').classList.remove('hidden');
         document.getElementById('sectionCrearCurso').classList.remove('hidden');
         document.getElementById('sectionAgregarEstudiante').classList.remove('hidden');
-    }
-
-    if (modoActual === 'profesor') {
+    } else {
         document.getElementById('sectionCrearCurso').classList.add('hidden');
         document.getElementById('sectionAgregarEstudiante').classList.add('hidden');
+        document.getElementById('sectionAdminTools').classList.add('hidden');
     }
 }
 
@@ -409,15 +449,256 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
     }
 });
 
-// Cargar estudiantes al cambiar curso en vista por estudiante
-document.getElementById('selectCourseStudent').addEventListener('change', function() {
-    updateStudentSelect('selectCourseStudent', 'selectStudentView');
+// Crear curso
+document.getElementById('addCourseForm')?.addEventListener('submit', e => {
+    e.preventDefault();
+    const name = document.getElementById('courseName').value.trim();
+    if (!name) return alert("Ingrese nombre del curso");
+
+    db.collection('courses').doc(name).get().then(doc => {
+        if (doc.exists) {
+            alert("El curso ya existe");
+        } else {
+            db.collection('courses').doc(name).set({ students: [] })
+                .then(() => {
+                    alert("Curso creado");
+                    document.getElementById('courseName').value = '';
+                    updateCourseSelects();
+                })
+                .catch(err => {
+                    console.error("Error al crear curso:", err);
+                    alert("Error: " + err.message);
+                });
+        }
+    }).catch(err => {
+        console.error("Error al verificar curso:", err);
+        alert("Error: " + err.message);
+    });
 });
 
-// Mostrar selector de trimestre solo cuando ya hay estudiante seleccionado
-document.getElementById('selectStudentView').addEventListener('change', function() {
-    const hasSelection = document.getElementById('selectCourseStudent').value && this.value;
-    document.getElementById('divTrimestreEstudiante').classList.toggle('hidden', !hasSelection);
+// Agregar estudiante individual
+document.getElementById('addStudentForm')?.addEventListener('submit', e => {
+    e.preventDefault();
+    const course = document.getElementById('selectCourseAddSingle').value;
+    const name = document.getElementById('studentName').value.trim();
+    if (!course || !name) return alert("Complete los campos");
+
+    db.collection('courses').doc(course).get().then(doc => {
+        if (!doc.exists) return alert("Curso no encontrado");
+
+        const data = doc.data();
+        if (data.students.some(s => s.name === name)) {
+            alert("El estudiante ya está en este curso");
+            return;
+        }
+
+        data.students.push({ name, issues: [] });
+        db.collection('courses').doc(course).update({ students: data.students })
+            .then(() => {
+                alert("Estudiante agregado");
+                document.getElementById('studentName').value = '';
+                updateStudentSelect('selectCourseIssue', 'selectStudent');
+                updateStudentSelect('selectCourseStudent', 'selectStudentView');
+            })
+            .catch(err => alert("Error: " + err.message));
+    });
+});
+
+// Agregar múltiples estudiantes desde TXT/CSV con validaciones robustas
+document.getElementById('addStudentsForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const course = document.getElementById('selectCourseAddStudent').value;
+    const fileInput = document.getElementById('fileStudents');
+    const previewDiv = document.getElementById('csvPreview');
+    
+    if (!course) return alert("Selecciona un curso primero");
+    if (!fileInput.files?.length) return alert("Selecciona un archivo TXT o CSV");
+
+    const file = fileInput.files[0];
+    
+    try {
+        const text = await file.text();
+        const lines = text.split(/\r?\n/)
+                         .map(line => line.trim())
+                         .filter(line => line.length > 0);
+
+        if (lines.length === 0) return alert("El archivo está vacío");
+
+        // Determinar si hay encabezado
+        let startIndex = 0;
+        if (lines[0].toLowerCase().trim().match(/^nombre$/i) || 
+            lines[0].toLowerCase().includes("nombre")) {
+            startIndex = 1; // saltamos el encabezado
+        }
+
+        const names = lines.slice(startIndex)
+                           .map(name => name.trim())
+                           .filter(name => name.length > 0);
+
+        if (names.length === 0) return alert("No se encontraron nombres válidos después del encabezado (si lo hay)");
+
+        // ────────────────────────────────────────────────
+        // VALIDACIONES POR NOMBRE
+        // ────────────────────────────────────────────────
+        const validNames = [];
+        const invalidNames = [];
+        const seenInFile = new Set(); // para detectar duplicados dentro del archivo
+
+        const nameRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s.'-]{2,80}$/;
+
+        names.forEach((name, index) => {
+            const originalLine = index + startIndex + 1;
+
+            if (!nameRegex.test(name)) {
+                invalidNames.push(`Línea ${originalLine}: "${name}" → no válido (solo letras, espacios, acentos, ñ, guiones, puntos; min 2 caracteres)`);
+                return;
+            }
+
+            const normalized = name.toLowerCase().trim();
+            
+            if (seenInFile.has(normalized)) {
+                invalidNames.push(`Línea ${originalLine}: "${name}" → duplicado dentro del archivo`);
+                return;
+            }
+
+            seenInFile.add(normalized);
+            validNames.push(name.trim());
+        });
+
+        // Mostrar preview con validación visual
+        let previewHTML = `<strong>${validNames.length} nombres válidos encontrados | ${invalidNames.length} con problemas</strong><br><br>`;
+        
+        if (validNames.length > 0) {
+            previewHTML += "<strong>Válidos:</strong><ul style='margin:8px 0 15px 20px;'>";
+            validNames.slice(0, 15).forEach(n => previewHTML += `<li>${n}</li>`);
+            if (validNames.length > 15) previewHTML += `<li>... y ${validNames.length - 15} más</li>`;
+            previewHTML += "</ul>";
+        }
+
+        if (invalidNames.length > 0) {
+            previewHTML += "<strong>Problemas detectados:</strong><ul style='color:#c00; margin:8px 0 15px 20px;'>";
+            invalidNames.slice(0, 10).forEach(err => previewHTML += `<li>${err}</li>`);
+            if (invalidNames.length > 10) previewHTML += `<li>... y ${invalidNames.length - 10} más</li>`;
+            previewHTML += "</ul>";
+        }
+
+        previewDiv.innerHTML = previewHTML;
+        previewDiv.style.display = 'block';
+
+        if (validNames.length === 0) {
+            return alert("No hay nombres válidos para agregar. Corrige el archivo e inténtalo de nuevo.");
+        }
+
+        if (invalidNames.length > 0 && !confirm(`Hay ${invalidNames.length} nombres con problemas.\n¿Quieres continuar solo con los ${validNames.length} válidos?`)) {
+            return;
+        }
+
+        // ────────────────────────────────────────────────
+        // Comparar con los que ya existen en Firestore
+        // ────────────────────────────────────────────────
+        const docRef = db.collection('courses').doc(course);
+        const doc = await docRef.get();
+        
+        if (!doc.exists) return alert("Curso no encontrado");
+
+        const data = doc.data();
+        let students = data.students || [];
+        const existingNames = new Set(students.map(s => s.name.toLowerCase().trim()));
+
+        let addedCount = 0;
+        let duplicates = 0;
+
+        validNames.forEach(name => {
+            const normalized = name.toLowerCase().trim();
+            if (existingNames.has(normalized)) {
+                duplicates++;
+                return;
+            }
+
+            students.push({ 
+                name: name.trim(), 
+                issues: [] 
+            });
+            addedCount++;
+            existingNames.add(normalized); // para evitar duplicados en la misma carga
+        });
+
+        if (addedCount === 0) {
+            return alert(`No se agregaron nuevos estudiantes.\n${duplicates > 0 ? duplicates + ' ya existían en el curso.' : 'Revisa las validaciones.'}`);
+        }
+
+        await docRef.update({ students });
+
+        alert(`¡Éxito! Se agregaron ${addedCount} estudiantes nuevos.\n${duplicates > 0 ? duplicates + ' ya existían en el curso.' : ''}`);
+
+        // Limpiar
+        fileInput.value = '';
+        previewDiv.style.display = 'none';
+        previewDiv.innerHTML = '';
+
+        // Actualizar selects
+        updateStudentSelect('selectCourseIssue', 'selectStudent');
+        updateStudentSelect('selectCourseStudent', 'selectStudentView');
+
+    } catch (err) {
+        console.error("Error procesando archivo:", err);
+        alert("Error al leer/procesar el archivo:\n" + err.message);
+    }
+});
+
+// Registrar incidencia
+document.getElementById('registerIssueForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const course = document.getElementById('selectCourseIssue').value;
+    const studentName = document.getElementById('selectStudent').value;
+    const trimestre = document.getElementById('trimestre').value;
+    const type = document.getElementById('issueType').value;
+    const subject = document.getElementById('subject').value;
+    const date = document.getElementById('issueDate').value;
+    const description = document.getElementById('issueDescription').value.trim();
+
+    if (!course || !studentName || !trimestre || !type || !subject || !date || !description) {
+        return alert('Complete todos los campos.');
+    }
+
+    db.collection('courses').doc(course).get().then(doc => {
+        if (doc.exists) {
+            const students = doc.data().students || [];
+            const studentIndex = students.findIndex(s => s.name === studentName);
+            if (studentIndex === -1) return alert('Estudiante no encontrado.');
+
+            const issue = { trimestre, type, subject, date, description };
+            students[studentIndex].issues = students[studentIndex].issues || [];
+            students[studentIndex].issues.push(issue);
+            return db.collection('courses').doc(course).update({ students });
+        } else {
+            alert('Curso no encontrado.');
+        }
+    }).then(() => {
+        alert('Incidencia registrada exitosamente.');
+        document.getElementById('registerIssueForm').reset();
+    }).catch(err => {
+        console.error('Error registrando incidencia:', err);
+        alert('Error al registrar incidencia: ' + err.message);
+    });
+});
+
+// Borrar todos los datos
+document.getElementById('btnBorrarTodo').addEventListener('click', () => {
+    if (confirm('¿Está seguro de borrar TODOS los datos? Esta acción es irreversible.')) {
+        db.collection('courses').get().then(snapshot => {
+            const batch = db.batch();
+            snapshot.forEach(doc => batch.delete(doc.ref));
+            return batch.commit();
+        }).then(() => {
+            alert('Todos los datos han sido borrados.');
+            updateCourseSelects();
+        }).catch(err => {
+            console.error('Error borrando datos:', err);
+            alert('Error al borrar datos: ' + err.message);
+        });
+    }
 });
 
 // Ver registros por estudiante + trimestre
@@ -478,7 +759,7 @@ document.getElementById('viewStudentBtn').addEventListener('click', () => {
         container.innerHTML = html;
         document.getElementById('exportPdfBtn').style.display = 'inline-block';
     }).catch(err => {
-        container.innerHTML = '<p>Error al cargar datos.</p>';
+        container.innerHTML = '<p>Error al cargar datos: ' + err.message + '</p>';
         console.error(err);
     });
 });
@@ -486,122 +767,41 @@ document.getElementById('viewStudentBtn').addEventListener('click', () => {
 // Función para exportar a PDF
 document.getElementById('exportPdfBtn').addEventListener('click', async () => {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
     const content = document.getElementById('recordsTable');
-    const canvas = await html2canvas(content, { scale: 2 });
-    const imgData = canvas.toDataURL('image/png');
-    const imgWidth = 180;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    doc.addImage(imgData, 'PNG', 15, 40, imgWidth, imgHeight);
-    doc.save('registros_incidencias.pdf');
-});
-
-// Crear curso
-document.getElementById('addCourseForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const courseName = document.getElementById('courseName').value.trim();
-    if (!courseName) return alert('Ingrese un nombre de curso válido.');
-
-    db.collection('courses').doc(courseName).set({
-        students: []
-    }).then(() => {
-        alert('Curso creado exitosamente.');
-        document.getElementById('courseName').value = '';
-        updateCourseSelects();
-    }).catch(err => {
-        console.error('Error creando curso:', err);
-        alert('Error al crear el curso.');
-    });
-});
-
-// Agregar estudiante
-document.getElementById('addStudentForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const course = document.getElementById('selectCourseAddStudent').value;
-    const studentName = document.getElementById('studentName').value.trim();
-    if (!course || !studentName) return alert('Seleccione curso y nombre válido.');
-
-    db.collection('courses').doc(course).get().then(doc => {
-        if (doc.exists) {
-            const students = doc.data().students || [];
-            if (students.some(s => s.name === studentName)) {
-                return alert('El estudiante ya existe en este curso.');
-            }
-            students.push({ name: studentName, issues: [] });
-            return db.collection('courses').doc(course).update({ students });
-        } else {
-            alert('Curso no encontrado.');
-        }
-    }).then(() => {
-        alert('Estudiante agregado exitosamente.');
-        document.getElementById('studentName').value = '';
-    }).catch(err => {
-        console.error('Error agregando estudiante:', err);
-        alert('Error al agregar estudiante.');
-    });
-});
-
-// Registrar incidencia
-document.getElementById('registerIssueForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const course = document.getElementById('selectCourseIssue').value;
-    const studentName = document.getElementById('selectStudent').value;
-    const trimestre = document.getElementById('trimestre').value;
-    const type = document.getElementById('issueType').value;
-    const subject = document.getElementById('subject').value;
-    const date = document.getElementById('issueDate').value;
-    const description = document.getElementById('issueDescription').value.trim();
-
-    if (!course || !studentName || !trimestre || !type || !subject || !date || !description) {
-        return alert('Complete todos los campos.');
-    }
-
-    db.collection('courses').doc(course).get().then(doc => {
-        if (doc.exists) {
-            const students = doc.data().students || [];
-            const studentIndex = students.findIndex(s => s.name === studentName);
-            if (studentIndex === -1) return alert('Estudiante no encontrado.');
-
-            const issue = { trimestre, type, subject, date, description };
-            students[studentIndex].issues = students[studentIndex].issues || [];
-            students[studentIndex].issues.push(issue);
-            return db.collection('courses').doc(course).update({ students });
-        } else {
-            alert('Curso no encontrado.');
-        }
-    }).then(() => {
-        alert('Incidencia registrada exitosamente.');
-        document.getElementById('registerIssueForm').reset();
-    }).catch(err => {
-        console.error('Error registrando incidencia:', err);
-        alert('Error al registrar incidencia.');
-    });
-});
-
-// Borrar todos los datos
-document.getElementById('btnBorrarTodo').addEventListener('click', () => {
-    if (confirm('¿Está seguro de borrar TODOS los datos? Esta acción es irreversible.')) {
-        db.collection('courses').get().then(snapshot => {
-            const batch = db.batch();
-            snapshot.forEach(doc => batch.delete(doc.ref));
-            return batch.commit();
-        }).then(() => {
-            alert('Todos los datos han sido borrados.');
-            updateCourseSelects();
-        }).catch(err => {
-            console.error('Error borrando datos:', err);
-            alert('Error al borrar datos.');
+    try {
+        const canvas = await html2canvas(content, { scale: 2 });
+        const pdf = new jsPDF({
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+            unit: 'px',
+            format: [canvas.width, canvas.height]
         });
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save('Reporte_Incidencias.pdf');
+    } catch (err) {
+        alert("Error al generar PDF: " + err.message);
+        console.error(err);
     }
 });
 
-// Cargar estudiantes al cambiar curso en registro de incidencia
-document.getElementById('selectCourseIssue').addEventListener('change', function() {
-    updateStudentSelect('selectCourseIssue', 'selectStudent');
-});
+// Inicialización de eventos para carga de estudiantes
+document.addEventListener('DOMContentLoaded', () => {
+    // Evento para cargar estudiantes al seleccionar curso en registrar incidencia
+    document.getElementById('selectCourseIssue').addEventListener('change', () => {
+        updateStudentSelect('selectCourseIssue', 'selectStudent');
+    });
 
-// Inicialización
-updateCourseSelects();
+    // Evento para cargar estudiantes al seleccionar curso en ver registros
+    document.getElementById('selectCourseStudent').addEventListener('change', () => {
+        updateStudentSelect('selectCourseStudent', 'selectStudentView');
+    });
+
+    // Evento para mostrar el div de trimestre al seleccionar estudiante en ver registros
+    document.getElementById('selectStudentView').addEventListener('change', () => {
+        const course = document.getElementById('selectCourseStudent').value;
+        const student = document.getElementById('selectStudentView').value;
+        document.getElementById('divTrimestreEstudiante').classList.toggle('hidden', !course || !student);
+    });
+});
 </script>
 </body>
 </html>
